@@ -1,5 +1,5 @@
 from .drawable import *
 from .animated import *
 from .mobile import *
-from .kirby import *
+from .torch import *
 from .engine import *
