@@ -10,3 +10,5 @@ This is a top-down game for my CSCI319 class, where your character is a torch th
 
 - make it harder with enemies as things move on.
 
+
+- maybe changing the health status from static to progressive, the most light used the more damage you recieve and vice-versa, since now its static, if you increase there is a static rate
