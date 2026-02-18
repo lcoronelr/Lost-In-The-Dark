@@ -20,7 +20,7 @@ class GameEngine(object):
       - HUD
     """
 
-    WORLD_SIZE = RESOLUTION   # expand this when you add a real map
+    WORLD_SIZE = RESOLUTION   # probably going to need to expand this when add a real map.
 
     def __init__(self):
         self.worldSize  = vec(*self.WORLD_SIZE)
@@ -28,25 +28,24 @@ class GameEngine(object):
         # Placeholder background — replace with actual map later 
         self._background = pygame.Surface(list(map(int, RESOLUTION)))
         self._background.fill(FLOOR_COLOR)
-        # Draw a simple border wall so movement feels bounded
-        pygame.draw.rect(self._background, WALL_COLOR,
-                         pygame.Rect(0, 0, int(RESOLUTION[0]), int(RESOLUTION[1])), 8)
-
+        
         # Game objects
         centre = RESOLUTION // 2
         self.torch    = Torch(position=centre)
         self.lighting = LightingOverlay()
         self.hud      = HUD()
+        #self.enemy = Enemy(position)
 
     def draw(self, drawSurface):
         drawSurface.blit(self._background, (0, 0))
         self.torch.draw(drawSurface)
         self.lighting.draw(drawSurface, self.torch)
         self.hud.draw(drawSurface, self.torch)
-
+        #self.enemy.draw
     def handleEvent(self, event):
         self.torch.handleEvent(event)
-
+        #prob self.enemy.handleEvent(event)
     def update(self, seconds):
         self.torch.update(seconds)
         Drawable.updateOffset(self.torch, self.worldSize)
+        #self.enemy.update(seconds)

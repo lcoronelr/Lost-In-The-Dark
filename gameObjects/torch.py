@@ -133,8 +133,3 @@ class Torch(Mobile):
 
     def getSize(self):
         return self.SIZE.copy()
-
-    # Convenience properties for the HUD
-    @property
-    def flameState(self):
-        return self.FSMflame.current_state.id

@@ -1,0 +1,24 @@
+---
+title: FlameFSM
+---
+stateDiagram-v2
+    [*] --> low
+
+    low    --> normal : raise_to_normal
+    low    --> high   : jump_high
+    normal --> high   : raise_to_high
+    normal --> low    : lower_to_low
+    high   --> normal : lower_to_normal
+    high   --> low    : jump_low
+
+    note right of low
+        Stealth mode.
+        Health regenerates.
+    end note
+    note right of normal
+        Balanced.
+    end note
+    note right of high
+        High visibility.
+        Health drains.
+    end note

@@ -24,7 +24,7 @@ class HUD:
     def draw(self, surface, torch):
         x, y = self.MARGIN, self.MARGIN
 
-        # --- health bar ---
+        # health bar 
         pct  = torch.health / MAX_HEALTH
         bg   = pygame.Rect(x, y, self.BAR_W, self.BAR_H)
         fill = pygame.Rect(x, y, int(self.BAR_W * pct), self.BAR_H)
@@ -32,13 +32,13 @@ class HUD:
         pygame.draw.rect(surface, (220, 50, 50), fill)
         pygame.draw.rect(surface, (200, 200, 200), bg, 1)
 
-        # --- flame state label ---
-        state = torch.flameState
+        #flame state 
+        state = torch.FSMflame.current_state.id
         color = self.STATE_COLORS.get(state, (255, 255, 255))
         label = self._font.render(f"FLAME: {state.upper()}", True, color)
         surface.blit(label, (x, y + self.BAR_H + 2))
 
-        # --- intensity bar ---
+        #intensity bar
         ix = x + self.BAR_W + 6
         t  = (torch.lightRadius - MIN_INTENSITY) / (MAX_INTENSITY - MIN_INTENSITY)
         intensity_fill = pygame.Rect(ix, y, int(self.BAR_W * t), self.BAR_H)
@@ -46,5 +46,8 @@ class HUD:
         pygame.draw.rect(surface, (30, 30, 0),   intensity_bg)
         pygame.draw.rect(surface, color,          intensity_fill)
         pygame.draw.rect(surface, (200, 200, 200), intensity_bg, 1)
-        hint = self._font.render("Q    E", True, (150, 150, 150))
+        hint = self._font.render("Q    E", True, (255, 255, 255))
         surface.blit(hint, (ix, y + self.BAR_H + 2))
+
+
+        #inventory ---- goes here 

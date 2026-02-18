@@ -9,7 +9,7 @@ class LightingOverlay:
         self._surface = pygame.Surface(list(map(int, RESOLUTION)), pygame.SRCALPHA)
 
     def draw(self, drawSurface, torch):
-        self._surface.fill((0, 0, 0, 240))   # near-black darkness
+        self._surface.fill((0, 0, 0, RESOLUTION[1]))   # near-black darkness
 
         # Centre of torch in screen coords
         size   = torch.getSize()

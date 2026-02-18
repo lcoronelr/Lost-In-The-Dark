@@ -11,7 +11,7 @@ class FlameFSM(AbstractGameFSM):
     Transitions are triggered automatically in updateState()
     """
 
-    low    = State(initial=True)
+    low    = State(initial=True) 
     normal = State()
     high   = State()
 
