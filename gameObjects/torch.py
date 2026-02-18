@@ -44,9 +44,6 @@ class Torch(Mobile):
 
         self._redrawPlaceholder()
 
-    # ------------------------------------------------------------------
-    # Input
-    # ------------------------------------------------------------------
     def handleEvent(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key in (pygame.K_a, pygame.K_LEFT):
@@ -76,9 +73,6 @@ class Torch(Mobile):
             elif event.key == pygame.K_e:
                 self._increasing = False
 
-    # ------------------------------------------------------------------
-    # Update
-    # ------------------------------------------------------------------
     def update(self, seconds):
         # Movement FSMs
         self.FSMx.update(seconds)
@@ -110,9 +104,6 @@ class Torch(Mobile):
         elif self.FSMflame == "low":
             self.health = min(MAX_HEALTH, self.health + HEALTH_REGEN_RATE * seconds)
 
-    # ------------------------------------------------------------------
-    # Draw
-    # ------------------------------------------------------------------
     def draw(self, drawSurface):
         """Draw the placeholder torch dot. Replace with sprite later."""
         self._redrawPlaceholder()
