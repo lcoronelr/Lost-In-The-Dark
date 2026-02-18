@@ -17,7 +17,7 @@ class LightingOverlay:
         cx, cy = int(centre[0]), int(centre[1])
         r      = int(torch.lightRadius)
 
-        # Soft glow: draw concentric circles from dark-edge to fully transparent
+        # Soft glow: draw circles from dark-edge to fully transparent
         for i in range(r, 0, -1):
             alpha = int(240 * (i / r) ** 1.8)   # brighter near centre
             pygame.draw.circle(self._surface, (0, 0, 0, alpha), (cx, cy), i)
