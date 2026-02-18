@@ -1,5 +1,5 @@
 import pygame
-from utils import MAX_HEALTH, RESOLUTION
+from utils import MAX_HEALTH, RESOLUTION, MIN_INTENSITY, MAX_INTENSITY
 
 class HUD:
     """Simple heads-up display: health bar + flame state."""
@@ -7,6 +7,9 @@ class HUD:
     BAR_W  = 60
     BAR_H  = 6
     MARGIN = 4
+
+        ## adapted from: https://www.youtube.com/watch?v=E82_hdoe06M
+
 
     STATE_COLORS = {
         "low"    : (60,  180, 255),
@@ -36,7 +39,6 @@ class HUD:
         surface.blit(label, (x, y + self.BAR_H + 2))
 
         # --- intensity bar ---
-        from utils import MIN_INTENSITY, MAX_INTENSITY
         ix = x + self.BAR_W + 6
         t  = (torch.lightRadius - MIN_INTENSITY) / (MAX_INTENSITY - MIN_INTENSITY)
         intensity_fill = pygame.Rect(ix, y, int(self.BAR_W * t), self.BAR_H)

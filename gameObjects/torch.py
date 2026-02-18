@@ -21,7 +21,7 @@ class Torch(Mobile):
     SIZE = vec(8, 8)   # sprite size , placeholder
 
     def __init__(self, position=(0, 0)):
-        # No sprite file yet — we draw a placeholder circle
+        # No sprite - place holder
         self.image     = pygame.Surface(list(map(int, self.SIZE)), pygame.SRCALPHA)
         self.position  = vec(*position)
         self.imageName = ""
@@ -78,13 +78,11 @@ class Torch(Mobile):
         self.FSMx.update(seconds)
         self.FSMy.update(seconds)
 
-        # Position + velocity cap
-        from utils import magnitude, scale
         if magnitude(self.velocity) > self.maxVelocity:
             self.velocity = scale(self.velocity, self.maxVelocity)
         self.position += self.velocity * seconds
 
-        # Clamp to world
+        #world
         size = self.SIZE
         self.position[0] = max(0, min(self.position[0], RESOLUTION[0] - size[0]))
         self.position[1] = max(0, min(self.position[1], RESOLUTION[1] - size[1]))
@@ -104,8 +102,12 @@ class Torch(Mobile):
         elif self.FSMflame == "low":
             self.health = min(MAX_HEALTH, self.health + HEALTH_REGEN_RATE * seconds)
 
+
+
+    # reference to : https://www.youtube.com/watch?v=NGFk44fY0O4 and https://stackoverflow.com/questions/31038285/python-pygame-game-lighting
+
     def draw(self, drawSurface):
-        """Draw the placeholder torch dot. Replace with sprite later."""
+        """Draw for the torch, this will be maybe replaced with a pixart later??"""
         self._redrawPlaceholder()
         from gameObjects.drawable import Drawable
         pos = list(map(int, self.position - Drawable.CAMERA_OFFSET))

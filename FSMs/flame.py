@@ -4,16 +4,11 @@ from statemachine import State
 
 class FlameFSM(AbstractGameFSM):
     """
-    Three-state FSM for the torch flame intensity.
+    low    : Stealth mode. health regen
+    normal : Balanced.
+    high   : High visibility. loose heatlh
 
-    States
-    ------
-    low    : Stealth mode. Limited vision. Health slowly regenerates.
-    normal : Balanced. No health change.
-    high   : High visibility. Health drains. Attracts enemies faster.
-
-    Transitions are triggered automatically in updateState() based on
-    the torch's current lightRadius vs the thresholds in constants.py.
+    Transitions are triggered automatically in updateState()
     """
 
     low    = State(initial=True)
@@ -26,7 +21,7 @@ class FlameFSM(AbstractGameFSM):
     lower_to_normal = high.to(normal)
     lower_to_low    = normal.to(low)
 
-    # Direct jumps (if intensity changes quickly)
+    # Direct jumps 
     jump_high = low.to(high)
     jump_low  = high.to(low)
 
