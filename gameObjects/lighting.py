@@ -3,13 +3,7 @@ from utils import RESOLUTION, vec
 from gameObjects.drawable import Drawable
 
 class LightingOverlay:
-    """
-    Renders a full-screen dark overlay with a soft circular
-    light cutout centred on the torch player.
-
-    Uses a mask surface blitted with BLEND_RGBA_MULT so only
-    the lit area is visible.
-    """
+    # reference to : https://www.youtube.com/watch?v=NGFk44fY0O4 and https://stackoverflow.com/questions/31038285/python-pygame-game-lighting
 
     def __init__(self):
         self._surface = pygame.Surface(list(map(int, RESOLUTION)), pygame.SRCALPHA)
