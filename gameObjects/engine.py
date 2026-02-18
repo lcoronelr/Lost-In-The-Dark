@@ -6,7 +6,7 @@ from .hud      import HUD
 from utils     import vec, RESOLUTION
 
 # Simple placeholder dungeon tile colors
-FLOOR_COLOR = (40, 35, 30)
+FLOOR_COLOR = (40, 50, 10)
 WALL_COLOR  = (20, 18, 16)
 
 class GameEngine(object):

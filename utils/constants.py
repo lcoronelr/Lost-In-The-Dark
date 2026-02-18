@@ -12,6 +12,6 @@ DEFAULT_INTENSITY = 70 # starting radius
 
 HIGH_INTENSITY_THRESHOLD = 90   # anything above this it drains
 LOW_INTENSITY_THRESHOLD  = 40   # health regens below this
-HEALTH_DRAIN_RATE  = 10   # Drain rate
-HEALTH_REGEN_RATE  = 5    # regen rate
+HEALTH_DRAIN_RATE  = 15   # Drain rate
+HEALTH_REGEN_RATE  = 3    # regen rate
 MAX_HEALTH = 100
