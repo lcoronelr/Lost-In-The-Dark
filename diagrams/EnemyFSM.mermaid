@@ -5,15 +5,15 @@ stateDiagram-v2
     [*] --> static
 
     static    --> normal : raise_to_normal
-    low    --> high   : jump_high
     normal --> high   : raise_to_high
-    normal --> low    : lower_to_low
     high   --> normal : lower_to_normal
-    high   --> low    : jump_low
 
     note right of static
         Enemies will remain static until radius overlaps their vision radius
     end note
 
-    note right of low
+    note right of high
+        first levels will only have it as normal,
+        then after some levels, depending on the enemy, it will shift to high
+
     end note

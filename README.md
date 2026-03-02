@@ -23,3 +23,5 @@ pip install -r requirements.txt
 
 
 - maybe changing the health status from static to progressive, the most light used the more damage you recieve and vice-versa, since now its static, if you increase there is a static rate
+
+- 3 Level map sized, 40x30 tiles , 800x600 pixels, for a total of 20 pzx per tile, screen view of 200x150
