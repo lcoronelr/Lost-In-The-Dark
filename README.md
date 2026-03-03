@@ -21,7 +21,40 @@ pip install -r requirements.txt
 
 - enemies regenerate health after a certain amount of time. maybe include or change something about this and think about the idea of regenerating or loosing health depending on the state (low , medium , high) from the flame itself || object will have to overlap the radius, on any place
 
+- wall torches you can light to permanently light areas.
+
+- keys and doors 
+
+- shadow enemies
+
+- oxygen zones low oxygen drains health
 
 - maybe changing the health status from static to progressive, the most light used the more damage you recieve and vice-versa, since now its static, if you increase there is a static rate
 
-- 3 Level map sized, 40x30 tiles , 800x600 pixels, for a total of 20 pzx per tile, screen view of 200x150
+- Particle Spark
+
+- Health pickups 
+
+- checkpoints
+
+- light trails maybe fading light behind me
+
+- pressure plates
+
+- pushable boxes
+
+- water puddles
+
+- one way doors
+
+-teleporters?
+
+- maybe secret room if time
+
+- sounds / effects in general
+
+## Settings 
+
+- Map 800 x 600
+- camera 200 x 150
+- 3 levels , tutorial (simple layout with 1 - 2 enemies) , challenge (more complex and 3-4 enemies with puzzles) , maybe the last one is the master (with interconnected rooms that teleport and all the mechanics fully working.)
