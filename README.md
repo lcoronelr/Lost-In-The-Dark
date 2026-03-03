@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 - one way doors
 
--teleporters?
+- teleporters?
 
 - maybe secret room if time
 
