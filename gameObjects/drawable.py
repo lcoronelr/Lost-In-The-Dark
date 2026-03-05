@@ -18,8 +18,6 @@ class Drawable(object):
             offset[i] = int(max(0,min(offset[i],worldSize[i] - RESOLUTION[i])))
         cls.CAMERA_OFFSET = offset
         
-        
-
     @classmethod    
     def translateMousePosition(cls, mousePos):
         newPos = vec(*mousePos)
