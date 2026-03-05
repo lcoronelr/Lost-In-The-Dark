@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 ## Map Credits: 
 
-- [![Follow and check out PixelPoem](https://pixel-poem.itch.io/dungeon-assetpuck)](https://pixel-poem.itch.io/dungeon-assetpuck)
+- [Follow and check out PixelPoem](https://pixel-poem.itch.io/dungeon-assetpuck)
 
 
 
