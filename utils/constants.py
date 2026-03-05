@@ -5,6 +5,7 @@ SCALE = 2
 UPSCALED = RESOLUTION * SCALE
 
 EPSILON = 0.01
+TILE_SIZE = 32
 
 MIN_INTENSITY = 20    # pixels radius at minimum flame
 MAX_INTENSITY = 140   # pixels radius at maximum flame
