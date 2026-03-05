@@ -23,7 +23,9 @@ pip install -r requirements.txt
 
 - including a inventory or tools / usables for the torch in order to go through the levels
 
-- make it harder with enemies as things move on.
+- Maybe: changing the torch placeholder to an actual torch art.
+
+- make harder enemies as things move on.
 
 - enemies regenerate health after a certain amount of time. maybe include or change something about this and think about the idea of regenerating or loosing health depending on the state (low , medium , high) from the flame itself || object will have to overlap the radius, on any place
 
@@ -31,7 +33,7 @@ pip install -r requirements.txt
 
 - keys and doors 
 
-- shadow enemies
+- enemies -> maybe including shadows that will try to put my fire off
 
 - oxygen zones low oxygen drains health
 
@@ -43,7 +45,7 @@ pip install -r requirements.txt
 
 - checkpoints
 
-- light trails maybe fading light behind me
+- light trails maybe fading light behind me (add if possible )
 
 - pressure plates
 
@@ -59,8 +61,4 @@ pip install -r requirements.txt
 
 - sounds / effects in general
 
-## Settings 
-
-- Map 800 x 600
-- camera 200 x 150
 - 3 levels , tutorial (simple layout with 1 - 2 enemies) , challenge (more complex and 3-4 enemies with puzzles) , maybe the last one is the master (with interconnected rooms that teleport and all the mechanics fully working.)
