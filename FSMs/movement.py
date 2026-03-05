@@ -9,27 +9,7 @@ class MovementFSM(AbstractGameFSM):
         super().__init__(obj)
     
     def update(self, seconds):
-        super().update(seconds)
-        
-        objsize = self.obj.getSize()
-
-        if self.obj.position[0] < 0:
-            self.obj.position[0] = 0
-            self.obj.velocity[0] = 0
-        # right 
-        if self.obj.position[0] + objsize[0] > RESOLUTION[0]:
-            self.obj.position[0] = RESOLUTION[0] - objsize[0]
-            self.obj.velocity[0] = 0
-        
-        #top 
-        if self.obj.position[1] < 0:
-            self.obj.position[1] = 0
-            self.obj.velocity[1] = 0
-        
-        #  bottom 
-        if self.obj.position[1] + objsize[1] > RESOLUTION[1]:
-            self.obj.position[1] = RESOLUTION[1] - objsize[1]
-            self.obj.velocity[1] = 0        
+        super().update(seconds)    
 
 
 class AccelerationFSM(MovementFSM):

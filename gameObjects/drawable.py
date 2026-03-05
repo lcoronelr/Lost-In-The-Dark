@@ -15,10 +15,7 @@ class Drawable(object):
         offset = objPos + (objSize // 2) - (RESOLUTION // 2)
         
         for i in range(2):
-            offset[i] = int(max(0,
-                                min(offset[i],
-                                    worldSize[i] - RESOLUTION[i])))
-        
+            offset[i] = int(max(0,min(offset[i],worldSize[i] - RESOLUTION[i])))
         cls.CAMERA_OFFSET = offset
         
         

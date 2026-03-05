@@ -82,10 +82,10 @@ class Torch(Mobile):
             self.velocity = scale(self.velocity, self.maxVelocity)
         self.position += self.velocity * seconds
 
-        #world
+        #world bounds — use a large world size, collision handled by engine
         size = self.SIZE
-        self.position[0] = max(0, min(self.position[0], RESOLUTION[0] - size[0]))
-        self.position[1] = max(0, min(self.position[1], RESOLUTION[1] - size[1]))
+        self.position[0] = max(0, self.position[0])
+        self.position[1] = max(0, self.position[1])
 
         # Flame intensity adjustment
         if self._increasing:

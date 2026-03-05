@@ -13,6 +13,11 @@ pip install -r requirements.txt
 
 ```
 
+## Map Credits: 
+
+- ![Follow and check out PixelPoem](https://pixel-poem.itch.io/dungeon-assetpuck)
+
+
 ## things to add 
 
 - including a inventory or tools / usables for the torch in order to go through the levels

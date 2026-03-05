@@ -3,49 +3,77 @@ from . import Drawable
 from .torch    import Torch
 from .lighting import LightingOverlay
 from .hud      import HUD
+from .tilemap  import TileMap
 from utils     import vec, RESOLUTION
+from os.path   import join, dirname, abspath
 
-# Simple placeholder dungeon tile colors
-FLOOR_COLOR = (40, 50, 10)
-WALL_COLOR  = (20, 18, 16)
+# 
+_HERE       = dirname(abspath(__file__))
+_PROJECT    = dirname(_HERE)
+
+#Spawn  point 
+SPAWN_X = 624
+SPAWN_Y = 380
+
 
 class GameEngine(object):
     """
     Top-level game manager for Lost in the Dark.
-
-    Currently sets up:
-      - A placeholder dungeon floor (solid color)
-      - The Torch player
-      - The darkness/lighting overlay
-      - HUD
     """
 
-    WORLD_SIZE = RESOLUTION   # probably going to need to expand this when add a real map.
-
     def __init__(self):
-        self.worldSize  = vec(*self.WORLD_SIZE)
-
-        # Placeholder background — replace with actual map later 
-        self._background = pygame.Surface(list(map(int, RESOLUTION)))
-        self._background.fill(FLOOR_COLOR)
-        
-        # Game objects
-        centre = RESOLUTION // 2
-        self.torch    = Torch(position=centre)
+        # Load the tile map
+        self.tilemap  = TileMap(join(_PROJECT, "maps", "level1.tmj"))
+        self.worldSize = self.tilemap.getSize()
+        #other objects
+        self.torch    = Torch(position=vec(SPAWN_X, SPAWN_Y))
         self.lighting = LightingOverlay()
         self.hud      = HUD()
-        #self.enemy = Enemy(position)
+        #Camera
+        Drawable.updateOffset(self.torch, self.worldSize)
 
     def draw(self, drawSurface):
-        drawSurface.blit(self._background, (0, 0))
+        self.tilemap.draw(drawSurface) # draw the surface from the json.
         self.torch.draw(drawSurface)
         self.lighting.draw(drawSurface, self.torch)
-        self.hud.draw(drawSurface, self.torch)
-        #self.enemy.draw
+        self.hud.draw(drawSurface, self.torch) # still on testing.
+
     def handleEvent(self, event):
         self.torch.handleEvent(event)
-        #prob self.enemy.handleEvent(event)
+
     def update(self, seconds):
         self.torch.update(seconds)
+        #wall rects BEFORE moving 
+        self._resolveCollisions()
         Drawable.updateOffset(self.torch, self.worldSize)
-        #self.enemy.update(seconds)
+
+#https://www.metanetsoftware.com/technique/tutorialA.html
+
+    def _resolveCollisions(self):
+        """Push torch out of any wall rect it overlaps."""
+        size   = self.torch.SIZE
+        tRect  = pygame.Rect(self.torch.position[0],self.torch.position[1],size[0],size[1])
+
+        for wall in self.tilemap.wallRects:
+            if not tRect.colliderect(wall):
+                continue
+
+            # Compute overlap on each axis and push out on the smallest one
+            overlapLeft  = tRect.right  - wall.left
+            overlapRight = wall.right   - tRect.left
+            overlapTop   = tRect.bottom - wall.top
+            overlapBot   = wall.bottom  - tRect.top
+
+            minH = overlapLeft if overlapLeft < overlapRight else -overlapRight
+            minV = overlapTop  if overlapTop  < overlapBot   else -overlapBot
+
+            if abs(minH) < abs(minV):
+                self.torch.position[0] -= minH
+                self.torch.velocity[0]  = 0
+            else:
+                self.torch.position[1] -= minV
+                self.torch.velocity[1]  = 0
+
+
+            tRect.x = self.torch.position[0]
+            tRect.y = self.torch.position[1]
