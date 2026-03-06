@@ -89,11 +89,9 @@ class Torch(Mobile):
 
         # Flame intensity adjustment
         if self._increasing:
-            self.lightRadius = min(MAX_INTENSITY,
-                                   self.lightRadius + INTENSITY_CHANGE_RATE * seconds)
+            self.lightRadius = min(MAX_INTENSITY,self.lightRadius + INTENSITY_CHANGE_RATE * seconds)
         if self._decreasing:
-            self.lightRadius = max(MIN_INTENSITY,
-                                   self.lightRadius - INTENSITY_CHANGE_RATE * seconds)
+            self.lightRadius = max(MIN_INTENSITY,self.lightRadius - INTENSITY_CHANGE_RATE * seconds)
 
         # Health logic driven by flame state
         self.FSMflame.updateState()
@@ -116,9 +114,7 @@ class Torch(Mobile):
     def _redrawPlaceholder(self):
         self.image.fill((0, 0, 0, 0))
         color = self._flameColor()
-        pygame.draw.circle(self.image, color,
-                           (int(self.SIZE[0] // 2), int(self.SIZE[1] // 2)),
-                           int(self.SIZE[0] // 2))
+        pygame.draw.circle(self.image, color,(int(self.SIZE[0] // 2), int(self.SIZE[1] // 2)),int(self.SIZE[0] // 2))
 
     def _flameColor(self):
         """Interpolate color: blue (low) → orange (normal) → white (high)."""
