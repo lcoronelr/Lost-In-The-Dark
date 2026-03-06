@@ -107,16 +107,15 @@ class Torch(Mobile):
     def draw(self, drawSurface):
         """Draw for the torch, this will be maybe replaced with a pixart later??"""
         self._redrawPlaceholder()
-        from gameObjects.drawable import Drawable
         pos = list(map(int, self.position - Drawable.CAMERA_OFFSET))
         drawSurface.blit(self.image, pos)
 
-    def _redrawPlaceholder(self):
+    def _redrawPlaceholder(self): #might change with a actual pixart later on.... ^^^
         self.image.fill((0, 0, 0, 0))
         color = self._flameColor()
         pygame.draw.circle(self.image, color,(int(self.SIZE[0] // 2), int(self.SIZE[1] // 2)),int(self.SIZE[0] // 2))
 
-    def _flameColor(self):
+    def _flameColor(self): 
         """Interpolate color: blue (low) → orange (normal) → white (high)."""
         t = (self.lightRadius - MIN_INTENSITY) / (MAX_INTENSITY - MIN_INTENSITY)
         t = max(0.0, min(1.0, t))

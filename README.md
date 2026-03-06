@@ -1,6 +1,8 @@
 # Lost In The Dark
 
-## Overwiew
+<p align="center">
+  <img src="logos/Lost_In_The_Dark.png" width="500">
+</p>
 
 This is a top-down game for my CSCI319 class, where your character is a torch that will use light to find its way on different levels.
 
