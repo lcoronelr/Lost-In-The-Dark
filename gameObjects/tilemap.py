@@ -52,7 +52,6 @@ class TileMap:
                 for obj in layer["objects"]:
                     self.wallRects.append(pygame.Rect(obj["x"], obj["y"], obj["width"], obj["height"]))
 
-    # ------------------------------------------------------------------
     def _sliceTileset(self, sheet):
         """Return dict: gid -> Surface."""
         tiles = {}

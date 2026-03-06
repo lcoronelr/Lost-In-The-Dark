@@ -1,7 +1,7 @@
 import pygame
 from . import Mobile
 from utils import *
-
+from gameObjects.drawable import Drawable
 from FSMs import AccelerationFSM, FlameFSM
 
 # How fast the light radius changes per second when holding Q or E
@@ -107,6 +107,7 @@ class Torch(Mobile):
     def draw(self, drawSurface):
         """Draw for the torch, this will be maybe replaced with a pixart later??"""
         self._redrawPlaceholder()
+        
         pos = list(map(int, self.position - Drawable.CAMERA_OFFSET))
         drawSurface.blit(self.image, pos)
 
