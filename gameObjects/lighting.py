@@ -17,7 +17,6 @@ class LightingOverlay:
         centre = torch.position + size // 2 - Drawable.CAMERA_OFFSET
         cx, cy = int(centre[0]), int(centre[1])
         r      = int(torch.lightRadius)
-        print(r)
 
         # draw circles from dark-edge to fully transparent
         for i in range(r, 0, -1):
