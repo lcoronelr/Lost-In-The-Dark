@@ -1,0 +1,83 @@
+flowchart TD
+
+    subgraph Loop["Game Loop — main.py"]
+        A["draw"] --> B["scale to screen"]
+        B --> C["handle events"]
+        C --> D["update"]
+        D --> A
+    end
+
+    Loop --> ENGINE
+
+    subgraph ENGINE["GameEngine — engine.py"]
+        E1["draw: map then torch then lighting then hud"]
+        E2["update: torch then collisions then camera"]
+    end
+
+    ENGINE --> OBJECTS
+
+    subgraph OBJECTS["Game Objects"]
+        subgraph Chain["Inheritance Chain"]
+            D1["Drawable — position, image, camera offset"]
+            D2["Animated — sprite frames, animation timer"]
+            D3["Mobile — velocity, position += vel x dt"]
+            D4["Torch — flame, health, FSMs, input"]
+            D1 --> D2 --> D3 --> D4
+        end
+
+        TM["TileMap
+        parses level1.tmj
+        pre-renders all layers to one surface
+        exposes wallRects for collision"]
+
+        LT["LightingOverlay
+        black surface with transparent hole
+        hole size driven by torch.lightRadius"]
+
+        HUD["HUD
+        reads torch.health
+        reads torch.lightRadius
+        reads FSMflame current state"]
+    end
+
+    subgraph FSMs["FSM System — FSMs/"]
+        F1["AccelerationFSM x2 — axis X and Y
+        states: not_moving, positive, negative, stalemate
+        drives torch.velocity each frame"]
+
+        F2["FlameFSM
+        states: low, normal, high
+        auto-transitions on lightRadius thresholds
+        low triggers health regen
+        high triggers health drain"]
+    end
+
+    D4 --> F1
+    D4 --> F2
+
+    subgraph Camera["Camera — Drawable class variable"]
+        C1["CAMERA_OFFSET = torch_center minus screen_center
+        clamped to map bounds
+        shared by every object — all subtract it when drawing"]
+    end
+
+    ENGINE --> Camera
+
+    subgraph DrawOrder["Draw Order each frame"]
+        O1["1. TileMap — dungeon floor and walls"]
+        O2["2. Torch — player"]
+        O3["3. LightingOverlay — darkness mask on top"]
+        O4["4. HUD — bars and labels, ignores camera offset"]
+        O1 --> O2 --> O3 --> O4
+    end
+
+    subgraph DataFlow["Key Press to Pixel — one frame"]
+        P1["KEYDOWN event received"]
+        P2["AccelerationFSM transitions state"]
+        P3["velocity updated in FSM.update()"]
+        P4["position += velocity x dt in Mobile.update()"]
+        P5["collision resolution pushes position out of walls"]
+        P6["camera offset recalculated around new position"]
+        P7["torch drawn at position minus camera offset"]
+        P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
+    end
