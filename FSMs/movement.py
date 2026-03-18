@@ -36,26 +36,13 @@ class AccelerationFSM(MovementFSM):
         self.axis      = axis
         self.direction = vec(0,0)
         self.direction[self.axis] = 1
-        self.accel = 200
+        self.accel = 100
         
         super().__init__(obj)
 
     def update(self, seconds=0):
         if self == "positive":
-            self.obj.velocity += self.direction * self.accel * seconds
+            self.obj.velocity += self.direction * seconds * self.accel
         elif self == "negative":
-            self.obj.velocity -= self.direction * self.accel * seconds
-                
-        elif self == "stalemate":
-            pass
-        else:
-            if self.obj.velocity[self.axis] > self.accel * seconds:
-                self.obj.velocity[self.axis] -= self.accel * seconds
-            elif self.obj.velocity[self.axis] < -self.accel * seconds:
-                self.obj.velocity[self.axis] += self.accel * seconds
-            else:
-                self.obj.velocity[self.axis] = 0
-        
-        
-    
+            self.obj.velocity -= self.direction * seconds  * self.accel
         super().update(seconds)
