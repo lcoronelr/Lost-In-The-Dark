@@ -1,4 +1,3 @@
-
 import pygame
 from utils import RESOLUTION, vec
 from gameObjects.drawable import Drawable
@@ -12,9 +11,8 @@ class LightingOverlay:
     def draw(self, drawSurface, torch):
         self._surface.fill((0, 0, 0, RESOLUTION[1]))   # near-black darkness
 
-        # Centre of torch in screen coords
-        size   = torch.getSize()
-        centre = torch.position + size // 2 - Drawable.CAMERA_OFFSET
+        # Centre of torch in screen coords — position IS the visual center
+        centre = torch.position - Drawable.CAMERA_OFFSET
         cx, cy = int(centre[0]), int(centre[1])
         r      = int(torch.lightRadius)
 

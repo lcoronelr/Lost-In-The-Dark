@@ -11,7 +11,7 @@ from os.path   import join, dirname, abspath
 _HERE       = dirname(abspath(__file__))
 _PROJECT    = dirname(_HERE)
 
-#Spawn  point 
+# Spawn point 
 SPAWN_X = 624
 SPAWN_Y = 380
 
@@ -25,34 +25,41 @@ class GameEngine(object):
         # Load the tile map
         self.tilemap  = TileMap(join(_PROJECT, "maps", "level1.tmj"))
         self.worldSize = self.tilemap.getSize()
-        #other objects
+        # Other objects
         self.torch    = Torch(position=vec(SPAWN_X, SPAWN_Y))
         self.lighting = LightingOverlay()
         self.hud      = HUD()
-        #Camera
+        # Camera
         Drawable.updateOffset(self.torch, self.worldSize)
 
     def draw(self, drawSurface):
-        self.tilemap.draw(drawSurface) # draw the surface from the json.
+        self.tilemap.draw(drawSurface)
         self.torch.draw(drawSurface)
         self.lighting.draw(drawSurface, self.torch)
-        self.hud.draw(drawSurface, self.torch) # still on testing.
+        self.hud.draw(drawSurface, self.torch)
 
     def handleEvent(self, event):
         self.torch.handleEvent(event)
 
     def update(self, seconds):
         self.torch.update(seconds)
-        #wall rects BEFORE moving 
+        # Wall collisions AFTER moving
         self._resolveCollisions()
         Drawable.updateOffset(self.torch, self.worldSize)
 
-#https://www.metanetsoftware.com/technique/tutorialA.html
+# https://www.metanetsoftware.com/technique/tutorialA.html
 
     def _resolveCollisions(self):
-        """Push torch out of any wall rect it overlaps."""
-        size   = self.torch.SIZE
-        tRect  = pygame.Rect(self.torch.position[0],self.torch.position[1],size[0],size[1])
+        """Push torch out of any wall rect it overlaps.
+           Torch position is the CENTER of the sprite."""
+        size  = self.torch.SIZE
+        half  = vec(15, 24)  # actual visual center of sprite within the 32x32 cell
+        # Build rect from center position
+        tRect = pygame.Rect(
+            self.torch.position[0] - half[0],
+            self.torch.position[1] - half[1],
+            size[0], size[1]
+        )
 
         for wall in self.tilemap.wallRects:
             if not tRect.colliderect(wall):
@@ -74,6 +81,5 @@ class GameEngine(object):
                 self.torch.position[1] -= minV
                 self.torch.velocity[1]  = 0
 
-
-            tRect.x = self.torch.position[0]
-            tRect.y = self.torch.position[1]
+            tRect.x = int(self.torch.position[0] - half[0])
+            tRect.y = int(self.torch.position[1] - half[1])

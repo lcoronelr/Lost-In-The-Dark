@@ -9,10 +9,11 @@ class Drawable(object):
     @classmethod
     def updateOffset(cls, trackingObject, worldSize):
         
-        objSize = trackingObject.getSize()
         objPos = trackingObject.position
         
-        offset = objPos + (objSize // 2) - (RESOLUTION // 2)
+        # position IS the visual center of the tracking object,
+        # so center the camera directly on it
+        offset = objPos - (RESOLUTION // 2)
         
         for i in range(2):
             offset[i] = int(max(0,min(offset[i],worldSize[i] - RESOLUTION[i])))
