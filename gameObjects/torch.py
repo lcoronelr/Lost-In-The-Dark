@@ -8,7 +8,7 @@ from FSMs import FlameFSM
 INTENSITY_CHANGE_RATE = 60
 
 # Player speed (pixels per second)
-MOVE_SPEED = 120
+MOVE_SPEED = 60
 
 # Sprite sheet layout (32x32 per cell, 8 cols x 5 rows)
 # Row 0 : walking                          (8 frames)
