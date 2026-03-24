@@ -15,6 +15,11 @@ _PROJECT    = dirname(_HERE)
 SPAWN_X = 624
 SPAWN_Y = 380
 
+# Hitbox: small rect around the character's feet, in pixels (width, height)
+# Much smaller than the 32x32 cell so narrow corridors still feel passable
+HITBOX_W = 8
+HITBOX_H = 8
+
 
 class GameEngine(object):
     """
@@ -23,7 +28,7 @@ class GameEngine(object):
 
     def __init__(self):
         # Load the tile map
-        self.tilemap  = TileMap(join(_PROJECT, "maps", "level1.tmj"))
+        self.tilemap   = TileMap(join(_PROJECT, "maps", "level1.tmj"))
         self.worldSize = self.tilemap.getSize()
         # Other objects
         self.torch    = Torch(position=vec(SPAWN_X, SPAWN_Y))
@@ -51,14 +56,13 @@ class GameEngine(object):
 
     def _resolveCollisions(self):
         """Push torch out of any wall rect it overlaps.
-           Torch position is the CENTER of the sprite."""
-        size  = self.torch.SIZE
-        half  = vec(15, 24)  # actual visual center of sprite within the 32x32 cell
-        # Build rect from center position
+           Uses a small hitbox centered on position so narrow corridors work."""
+        hw = HITBOX_W // 2
+        hh = HITBOX_H // 2
         tRect = pygame.Rect(
-            self.torch.position[0] - half[0],
-            self.torch.position[1] - half[1],
-            size[0], size[1]
+            self.torch.position[0] - hw,
+            self.torch.position[1] - hh,
+            HITBOX_W, HITBOX_H
         )
 
         for wall in self.tilemap.wallRects:
@@ -81,5 +85,5 @@ class GameEngine(object):
                 self.torch.position[1] -= minV
                 self.torch.velocity[1]  = 0
 
-            tRect.x = int(self.torch.position[0] - half[0])
-            tRect.y = int(self.torch.position[1] - half[1])
+            tRect.x = int(self.torch.position[0] - hw)
+            tRect.y = int(self.torch.position[1] - hh)

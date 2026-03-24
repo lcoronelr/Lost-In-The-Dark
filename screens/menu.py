@@ -1,3 +1,7 @@
+"""
+author: Prof. Liz Matthews
+"""
+
 from gameObjects import Drawable
 from utils.vector import vec, magnitude
 from . import TextEntry

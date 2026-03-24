@@ -29,8 +29,7 @@ class AccelerationFSM(MovementFSM):
     
     stop_increase = positive.to(not_moving) | stalemate.to(negative)
     
-    stop_all      = not_moving.to.itself(internal=True) | negative.to(not_moving) | \
-                    positive.to(not_moving) | stalemate.to(not_moving)
+    stop_all      = not_moving.to.itself(internal=True) | negative.to(not_moving) | positive.to(not_moving) | stalemate.to(not_moving)
     
     def __init__(self, obj, axis=0):
         self.axis      = axis
