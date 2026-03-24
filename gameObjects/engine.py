@@ -19,6 +19,10 @@ SPAWN_Y = 380
 HITBOX_W = 8
 HITBOX_H = 8
 
+#Sounds
+AMBIENT_SOUND = 0.5
+FLAME_MIN_VOL = 0.0
+FLAME_MAX_VOL = 0.8
 
 class GameEngine(object):
     """
@@ -36,6 +40,18 @@ class GameEngine(object):
         # Camera
         Drawable.updateOffset(self.torch, self.worldSize)
 
+
+        #sounds 
+        pygame.mixer.init()
+        self.ambientSound = pygame.mixer.Sound(join(_PROJECT, "sounds", "ambient.wav"))
+        self.flameSound   = pygame.mixer.Sound(join(_PROJECT, "sounds", "flame.wav"))
+ 
+        self.ambientSound.set_volume(AMBIENT_SOUND)
+        self.flameSound.set_volume(FLAME_MIN_VOL)
+ 
+        self.ambientSound.play(loops=-1)   # infinite
+        self.flameSound.play(loops=-1)
+
     def draw(self, drawSurface):
         self.tilemap.draw(drawSurface)
         self.torch.draw(drawSurface)
@@ -50,9 +66,22 @@ class GameEngine(object):
         # Wall collisions AFTER moving
         self._resolveCollisions()
         Drawable.updateOffset(self.torch, self.worldSize)
+        self._updateSound()
+ 
+    def stop(self):
+        """Call this when leaving the level so sounds don't keep playing."""
+        self.ambientSound.stop()
+        self.flameSound.stop()
 
 # https://www.metanetsoftware.com/technique/tutorialA.html
 
+    def _updateSound(self):
+        """Scale flame sound volume to match the current light radius."""
+        from utils.constants import MIN_INTENSITY, MAX_INTENSITY
+        t = (self.torch.lightRadius - MIN_INTENSITY) / (MAX_INTENSITY - MIN_INTENSITY)
+        t = max(0.0, min(1.0, t))
+        self.flameSound.set_volume(FLAME_MIN_VOL + t * (FLAME_MAX_VOL - FLAME_MIN_VOL))
+ 
     def _resolveCollisions(self):
         """Push torch out of any wall rect it overlaps.
            Uses a small hitbox centered on position so narrow corridors work."""

@@ -11,7 +11,7 @@ import pygame
 RECT_LEVEL1 = (55, 55,  210, 22)
 RECT_LEVEL2 = (55, 104, 210, 27)
 RECT_LEVEL3 = (55, 155, 210, 24)
-RECT_EXIT   = (258, 6,  54,  18)
+RECT_EXIT = (258, 17, 54, 18)
 
 def mouseHit(event, rect):
     """Returns True if a left click landed inside rect (320x240 space)."""
@@ -56,7 +56,7 @@ class ScreenManager(object):
                                 lambda e: mouseHit(e, RECT_LEVEL3),
                                 center="both")
 
-        self.mainMenu.addOption("exit", "EXIT", vec(284, 14),
+        self.mainMenu.addOption("exit", "EXIT", vec(284, 25),
                                 lambda e: mouseHit(e, RECT_EXIT),
                                 center="both")
 
