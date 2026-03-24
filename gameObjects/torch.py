@@ -159,6 +159,8 @@ class Torch(Mobile):
         """Pull the current (frame, row) from the sheet and apply brightness."""
         raw = SpriteManager.getInstance().getSprite(_SPRITE_FILE, (self.frame, self.row))
         self.image = raw.copy()
+        if self._heldX == -1:
+            self.image = pygame.transform.flip(self.image, True, False)
         self._applyBrightness()
 
     def _applyBrightness(self):
