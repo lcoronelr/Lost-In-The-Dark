@@ -1,3 +1,12 @@
+"""
+    """
+    The main function initializes a Pygame window for a game called "Lost in the Dark", manages screens,
+    handles events, updates the game state, and exits the game loop when needed.
+    """
+    Author : Luis Coronel
+    The main function initializes a Pygame window for a game called "Lost in the Dark", manages screens,
+    handles events, updates the game state, and exits when needed.
+    """
 import pygame
 from screens import ScreenManager
 from utils import RESOLUTION, UPSCALED

@@ -1,3 +1,7 @@
+"""
+From Professor Matthews.
+"""
+
 from utils import SpriteManager, SCALE, RESOLUTION, vec
 
 import pygame
@@ -13,7 +17,7 @@ class Drawable(object):
         
         # position IS the visual center of the tracking object,
         # so center the camera directly on it
-        offset = objPos - (RESOLUTION // 2)
+        offset = objPos - (RESOLUTION // 2) # centered torch
         
         for i in range(2):
             offset[i] = int(max(0,min(offset[i],worldSize[i] - RESOLUTION[i])))

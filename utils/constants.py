@@ -1,3 +1,7 @@
+"""
+variables for the game
+"""
+
 from . import vec
 
 

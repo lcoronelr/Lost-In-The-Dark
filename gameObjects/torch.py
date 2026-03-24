@@ -1,3 +1,7 @@
+"""
+The Torch class represents the player character in a game as a living torch with movement controls
+and flame intensity adjustments.
+"""
 import pygame
 from . import Mobile
 from utils import *

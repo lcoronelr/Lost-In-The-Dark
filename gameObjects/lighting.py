@@ -1,3 +1,7 @@
+"""
+The `LightingOverlay` class in Python uses Pygame to create a lighting effect around a torch object
+on a draw surface.
+"""
 import pygame
 from utils import RESOLUTION, vec
 from gameObjects.drawable import Drawable

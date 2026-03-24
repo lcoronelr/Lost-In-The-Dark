@@ -1,3 +1,5 @@
+# This class represents a heads-up display (HUD) in a game, displaying a health bar, flame state, and
+# intensity bar for a torch entity.
 import pygame
 from utils import MAX_HEALTH, RESOLUTION, MIN_INTENSITY, MAX_INTENSITY
 
@@ -50,4 +52,4 @@ class HUD:
         surface.blit(hint, (ix, y + self.BAR_H + 2))
 
 
-        #inventory ---- goes here 
+        #inventory ---- goes here (maybe include some changes in the HUD to make it look better next time)

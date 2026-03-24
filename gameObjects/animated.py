@@ -1,3 +1,7 @@
+"""
+From Professor Matthews
+"""
+
 from . import Drawable
 from utils import SpriteManager
 

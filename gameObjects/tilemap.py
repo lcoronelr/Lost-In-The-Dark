@@ -1,3 +1,7 @@
+"""
+The `TileMap` class loads a Tiled .tmx map, renders tile layers, and exposes wall information for a
+game environment.
+"""
 import json
 import pygame
 from os.path import join, dirname, abspath
