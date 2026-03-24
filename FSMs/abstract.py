@@ -1,3 +1,7 @@
+"""
+from Professor Matthews
+"""
+
 from statemachine import StateMachine
 
 class AbstractGameFSM(StateMachine):
@@ -23,3 +27,4 @@ class AbstractGameFSM(StateMachine):
             return self.current_state.id == other.current_state.id
         else:
             return self.current_state.id == other
+

@@ -134,9 +134,9 @@ class Torch(Mobile):
         new_row, new_nFrames = _ANIM[(is_moving, flame_state)]
 
         if new_row != self.row:
-            self.row            = new_row
-            self.nFrames        = new_nFrames
-            self.frame          = 0
+            self.row = new_row
+            self.nFrames = new_nFrames
+            self.frame = 0
             self.animationTimer = 0
 
         # Advance animation

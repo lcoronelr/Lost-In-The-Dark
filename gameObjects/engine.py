@@ -16,7 +16,6 @@ SPAWN_X = 624
 SPAWN_Y = 380
 
 # Hitbox: small rect around the character's feet, in pixels (width, height)
-# Much smaller than the 32x32 cell so narrow corridors still feel passable
 HITBOX_W = 8
 HITBOX_H = 8
 
