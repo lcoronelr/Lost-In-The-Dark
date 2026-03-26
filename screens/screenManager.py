@@ -7,7 +7,7 @@ from utils.constants import RESOLUTION
 from pygame.locals import *
 import pygame
 
-# Parchment click zones in 320x240 space (x, y, width, height)
+# click zones in 320x240 space (x, y, width, height)
 RECT_LEVEL1 = (55, 55,  210, 22)
 RECT_LEVEL2 = (55, 104, 210, 27)
 RECT_LEVEL3 = (55, 155, 210, 24)
@@ -32,8 +32,7 @@ class ScreenManager(object):
 
         # Placeholder text shown for levels not yet built
         self.comingSoon = TextEntry(vec(0, 0), "COMING SOON",   "default8")
-        self.escHint    = TextEntry(vec(0, 0), "ESC: MAIN MENU","default8",
-                                    color=(160, 160, 160))
+        self.escHint    = TextEntry(vec(0, 0), "ESC: MAIN MENU","default8",color=(160, 160, 160))
         cs = self.comingSoon.getSize()
         eh = self.escHint.getSize()
         self.comingSoon.position = RESOLUTION // 2 - cs // 2
@@ -41,24 +40,11 @@ class ScreenManager(object):
                                        RESOLUTION[1] // 2 + 16)
 
         # Main menu with background image and four clickable options
-        self.mainMenu = EventMenu("menu_bg.png", fontName="default8",
-                                  color=(80, 50, 20))
-
-        self.mainMenu.addOption("level1", "LEVEL  1", vec(160, 66),
-                                lambda e: mouseHit(e, RECT_LEVEL1),
-                                center="both")
-
-        self.mainMenu.addOption("level2", "LEVEL  2", vec(160, 117),
-                                lambda e: mouseHit(e, RECT_LEVEL2),
-                                center="both")
-
-        self.mainMenu.addOption("level3", "LEVEL  3", vec(160, 167),
-                                lambda e: mouseHit(e, RECT_LEVEL3),
-                                center="both")
-
-        self.mainMenu.addOption("exit", "EXIT", vec(284, 25),
-                                lambda e: mouseHit(e, RECT_EXIT),
-                                center="both")
+        self.mainMenu = EventMenu("menu_bg.png", fontName="default8",color=(80, 50, 20))
+        self.mainMenu.addOption("level1", "LEVEL  1", vec(160, 66),lambda e: mouseHit(e, RECT_LEVEL1), center="both")
+        self.mainMenu.addOption("level2", "LEVEL  2", vec(160, 117),lambda e: mouseHit(e, RECT_LEVEL2),center="both")
+        self.mainMenu.addOption("level3", "LEVEL  3", vec(160, 167),lambda e: mouseHit(e, RECT_LEVEL3),center="both")
+        self.mainMenu.addOption("exit", "EXIT", vec(284, 25),lambda e: mouseHit(e, RECT_EXIT),center="both")
 
     def draw(self, drawSurf):
         if self.state == "mainMenu":
