@@ -24,13 +24,9 @@ class Animated(Drawable):
             
         if not self.animate:
             return
-        
         self.animationTimer += seconds 
-           
         if self.animationTimer > 1 / self.framesPerSecond:
             self.frame += 1
             self.frame %= self.nFrames
             self.animationTimer -= 1 / self.framesPerSecond
-            self.image = SpriteManager.getInstance().getSprite(self.fileName,
-                                        (self.frame, self.row))
-    
+            self.image = SpriteManager.getInstance().getSprite(self.fileName,(self.frame, self.row))  
