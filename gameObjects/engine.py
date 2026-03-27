@@ -11,46 +11,55 @@ from os.path   import join, dirname, abspath
 _HERE       = dirname(abspath(__file__))
 _PROJECT    = dirname(_HERE)
 
-# Spawn point 
-SPAWN_X = 624
-SPAWN_Y = 380
-
 # Hitbox: small rect around the character's feet, in pixels (width, height)
 HITBOX_W = 8
 HITBOX_H = 8
 
-#Sounds
+# Sounds
 AMBIENT_SOUND = 0.5
 FLAME_MIN_VOL = 0.0
 FLAME_MAX_VOL = 0.8
 
+# Fallback spawn if no player_spawn point found in map
+DEFAULT_SPAWN = vec(624, 380)   # level3 spawn, overridden by map if Spawn layer exists
+
+
 class GameEngine(object):
     """
     Top-level game manager for Lost in the Dark.
+    Accepts a mapFile parameter so it can load any level.
     """
 
-    def __init__(self):
+    def __init__(self, mapFile="level3.tmj"):
         # Load the tile map
-        self.tilemap   = TileMap(join(_PROJECT, "maps", "level3.tmj"))
+        self.tilemap   = TileMap(join(_PROJECT, "maps", mapFile))
         self.worldSize = self.tilemap.getSize()
+
+        # Read player spawn from map, fall back to default
+        spawn    = self.tilemap.getSpawn("player_spawn")
+        spawnPos = vec(*spawn) if spawn else DEFAULT_SPAWN
+
         # Other objects
-        self.torch    = Torch(position=vec(SPAWN_X, SPAWN_Y))
+        self.torch    = Torch(position=spawnPos)
         self.lighting = LightingOverlay()
         self.hud      = HUD()
+
         # Camera
         Drawable.updateOffset(self.torch, self.worldSize)
 
-
-        #sounds 
-        pygame.mixer.init()
-        self.ambientSound = pygame.mixer.Sound(join(_PROJECT, "sounds", "ambient.wav"))
-        self.flameSound   = pygame.mixer.Sound(join(_PROJECT, "sounds", "flame.wav"))
- 
-        self.ambientSound.set_volume(AMBIENT_SOUND)
-        self.flameSound.set_volume(FLAME_MIN_VOL)
- 
-        self.ambientSound.play(loops=-1)   # infinite
-        self.flameSound.play(loops=-1)
+        # Sounds
+        self.ambientSound = None
+        self.flameSound   = None
+        try:
+            pygame.mixer.init()
+            self.ambientSound = pygame.mixer.Sound(join(_PROJECT, "sounds", "ambient.wav"))
+            self.flameSound   = pygame.mixer.Sound(join(_PROJECT, "sounds", "flame.wav"))
+            self.ambientSound.set_volume(AMBIENT_SOUND)
+            self.flameSound.set_volume(FLAME_MIN_VOL)
+            self.ambientSound.play(loops=-1)
+            self.flameSound.play(loops=-1)
+        except pygame.error:
+            pass   # no audio device — game runs silently
 
     def draw(self, drawSurface):
         self.tilemap.draw(drawSurface)
@@ -67,21 +76,22 @@ class GameEngine(object):
         self._resolveCollisions()
         Drawable.updateOffset(self.torch, self.worldSize)
         self._updateSound()
- 
+
     def stop(self):
         """Call this when leaving the level so sounds don't keep playing."""
-        self.ambientSound.stop()
-        self.flameSound.stop()
+        if self.ambientSound: self.ambientSound.stop()
+        if self.flameSound:   self.flameSound.stop()
 
-# https://www.metanetsoftware.com/technique/tutorialA.html
+    # https://www.metanetsoftware.com/technique/tutorialA.html
 
     def _updateSound(self):
         """Scale flame sound volume to match the current light radius."""
         from utils.constants import MIN_INTENSITY, MAX_INTENSITY
         t = (self.torch.lightRadius - MIN_INTENSITY) / (MAX_INTENSITY - MIN_INTENSITY)
         t = max(0.0, min(1.0, t))
-        self.flameSound.set_volume(FLAME_MIN_VOL + t * (FLAME_MAX_VOL - FLAME_MIN_VOL))
- 
+        if self.flameSound:
+            self.flameSound.set_volume(FLAME_MIN_VOL + t * (FLAME_MAX_VOL - FLAME_MIN_VOL))
+
     def _resolveCollisions(self):
         """Push torch out of any wall rect it overlaps.
            Uses a small hitbox centered on position so narrow corridors work."""

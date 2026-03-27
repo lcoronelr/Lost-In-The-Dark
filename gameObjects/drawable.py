@@ -40,6 +40,10 @@ class Drawable(object):
     
     def draw(self, drawSurface):
       drawSurface.blit(self.image, list(map(int, self.position - Drawable.CAMERA_OFFSET)))
+
+    def drawFixed(self, drawSurface):
+        """Draw at a fixed screen position ignoring camera offset. Used for HUD and overlays."""
+        drawSurface.blit(self.image, list(map(int, self.position)))
             
     def getSize(self):
         return vec(*self.image.get_size())
