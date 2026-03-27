@@ -31,7 +31,7 @@ class GameEngine(object):
 
     def __init__(self):
         # Load the tile map
-        self.tilemap   = TileMap(join(_PROJECT, "maps", "level1.tmj"))
+        self.tilemap   = TileMap(join(_PROJECT, "maps", "level3.tmj"))
         self.worldSize = self.tilemap.getSize()
         # Other objects
         self.torch    = Torch(position=vec(SPAWN_X, SPAWN_Y))
