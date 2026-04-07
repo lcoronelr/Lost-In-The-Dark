@@ -55,5 +55,4 @@ class LightingOverlay:
         cx, cy = int(centre[0]), int(centre[1])
         # BLEND_RGBA_MIN keeps the lower (more transparent) alpha value per pixel
         # so where two lights overlap the overlap stays bright instead of going dark
-        self._surface.blit(surf, (cx - r, cy - r),
-                           special_flags=pygame.BLEND_RGBA_MIN)
+        self._surface.blit(surf, (cx - r, cy - r),special_flags=pygame.BLEND_RGBA_MIN)

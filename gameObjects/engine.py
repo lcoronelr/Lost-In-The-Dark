@@ -118,9 +118,7 @@ class GameEngine(object):
                 target = vec(wx, wy)
                 diff   = target - self.torch.position
                 if magnitude(diff) > 0:
-                    self.fireballs.append(
-                        Fireball(self.torch.position.copy(), diff)
-                    )
+                    self.fireballs.append(Fireball(self.torch.position.copy(), diff))
 
     # ── Update ───────────────────────────────────────────────────────────────
 
@@ -158,10 +156,7 @@ class GameEngine(object):
             door.update(seconds)
 
         for enemy in self.enemies:
-            enemy.update(seconds,
-                         self.torch.position,
-                         self.torch.lightRadius,
-                         self.tilemap.wallRects)
+            enemy.update(seconds,self.torch.position,self.torch.lightRadius,self.tilemap.wallRects)
             dmg = enemy.tryDamagePlayer(self.torch)
             if dmg > 0:
                 self.torch.health = max(0, self.torch.health - dmg)
