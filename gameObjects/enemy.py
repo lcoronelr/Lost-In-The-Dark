@@ -27,9 +27,9 @@ EASY_ENEMY_SIZE           = 14       # hitbox radius
 
 # Fireball constants
 FIREBALL_SPEED   = 120
-FIREBALL_RADIUS  = 40           # light radius while traveling
+FIREBALL_RADIUS  = 20           # light radius while traveling
 FIREBALL_DAMAGE  = 30
-FIREBALL_SIZE    = 6            # hitbox radius
+FIREBALL_SIZE    = 3            # hitbox radius
 
 
 def _loadStrip(filename, frameW=32, frameH=32):
