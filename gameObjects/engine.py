@@ -7,7 +7,7 @@ from .hud      import HUD
 from .tilemap  import TileMap
 from .items    import WallTorch, Key, Box, PressurePlate, Door
 from .enemy    import Enemy, Fireball
-from utils     import vec, RESOLUTION, magnitude
+from utils     import vec, RESOLUTION, magnitude, UPSCALED
 from os.path   import join, dirname, abspath
 
 _HERE    = dirname(abspath(__file__))
@@ -54,6 +54,8 @@ class GameEngine(object):
         self.fireballs = []
         self.hasKey    = False
         self.isDead    = False
+        
+        self._fireballCooldown = 0.0
 
         Drawable.updateOffset(self.torch, self.worldSize)
 
@@ -110,9 +112,11 @@ class GameEngine(object):
 
         # LEFT CLICK — shoot fireball toward mouse cursor
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if self.torch.health > FIREBALL_COST:
+            
+
+            if self.torch.health > FIREBALL_COST and self._fireballCooldown <= 0:
                 self.torch.health -= FIREBALL_COST
-                from utils.constants import UPSCALED
+                self._fireballCooldown = 1 # cooldown speed
                 mx, my = pygame.mouse.get_pos()
                 wx = mx * RESOLUTION[0] / UPSCALED[0] + Drawable.CAMERA_OFFSET[0]
                 wy = my * RESOLUTION[1] / UPSCALED[1] + Drawable.CAMERA_OFFSET[1]
@@ -124,6 +128,8 @@ class GameEngine(object):
     # ── Update ───────────────────────────────────────────────────────────────
 
     def update(self, seconds):
+        self._fireballCooldown = max(0, self._fireballCooldown - seconds)
+
         if self.isDead:
             return
 

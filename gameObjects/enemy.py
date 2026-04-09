@@ -32,6 +32,7 @@ FIREBALL_DAMAGE  = 30
 FIREBALL_SIZE    = 3            # hitbox radius
 
 
+
 def _loadStrip(filename, frameW=32, frameH=32):
     """Load a horizontal sprite strip and slice into frames."""
     path = join(_ENEMIES, filename)
@@ -116,6 +117,7 @@ class Enemy:
             self.FSM.startChase()
         elif self.FSM == "chase" and dist > torchRadius * 1.2:
             self.FSM.stopChase()
+
 
         # Movement
         if self.FSM == "chase":
@@ -233,8 +235,10 @@ class Fireball:
         self.velocity    = scale(direction, FIREBALL_SPEED)
         self.lightRadius = FIREBALL_RADIUS
         self.active      = True
+        self._fireballCooldown = 0.0
 
     def update(self, seconds, wallRects, enemies):
+        self._fireballCooldown = max(0, self._fireballCooldown - seconds)
         if not self.active:
             return
 
@@ -276,3 +280,4 @@ class Fireball:
 
         # Bright core
         pygame.draw.circle(surface, (255, 220, 100), (sx, sy), FIREBALL_SIZE)
+
