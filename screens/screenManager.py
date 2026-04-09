@@ -116,9 +116,13 @@ class ScreenManager(object):
     # ── Handle Events ──────────────────────────────────────────────────
 
     def handleEvent(self, event):
-
         # ── In a level (not paused) ────────────────────────────────────
         if self.state.isInGame() and not self.state.isPaused():
+
+            if self.state == "level2":
+                if event.type == KEYDOWN and event.key == K_ESCAPE:
+                    self._goToMenu()
+                return
 
             # Death screen intercepts all input
             if self.state in ["level1", "level3"] and self.game and self.game.isDead:
