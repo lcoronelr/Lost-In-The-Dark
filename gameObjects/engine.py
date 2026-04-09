@@ -61,7 +61,7 @@ class GameEngine(object):
         self.flameSound   = None
         try:
             pygame.mixer.init()
-            self.ambientSound = pygame.mixer.Sound(join(_PROJECT, "1s", "ambient.wav"))
+            self.ambientSound = pygame.mixer.Sound(join(_PROJECT, "sounds", "ambient.wav"))
             self.flameSound   = pygame.mixer.Sound(join(_PROJECT, "sounds", "flame.wav"))
             self.ambientSound.set_volume(AMBIENT_SOUND)
             self.flameSound.set_volume(FLAME_MIN_VOL)

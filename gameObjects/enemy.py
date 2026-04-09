@@ -18,18 +18,18 @@ _PROJECT = dirname(_HERE)
 _ENEMIES = join(_PROJECT, "images", "Enemy_Animations_Set")
 
 # Enemy constants
-ENEMY_SPEED_WANDER   = 30
-ENEMY_SPEED_CHASE    = 55
-ENEMY_DAMAGE         = 50       # half health on contact
-ENEMY_DAMAGE_COOLDOWN = 2.0     # seconds before it can damage again
-ENEMY_WANDER_RANGE   = 60       # how far it wanders from spawn
-ENEMY_SIZE           = 14       # hitbox radius
+EASY_ENEMY_SPEED_WANDER   = 30
+EASY_ENEMY_SPEED_CHASE    = 55
+EASY_ENEMY_DAMAGE         = 50       # half health on contact
+EASY_ENEMY_DAMAGE_COOLDOWN = 2.0     # seconds before it can damage again
+EASY_ENEMY_WANDER_RANGE   = 60       # how far it wanders from spawn
+EASY_ENEMY_SIZE           = 14       # hitbox radius
 
 # Fireball constants
 FIREBALL_SPEED   = 120
-FIREBALL_RADIUS  = 20           # light radius while traveling
+FIREBALL_RADIUS  = 40           # light radius while traveling
 FIREBALL_DAMAGE  = 30
-FIREBALL_SIZE    = 3            # hitbox radius
+FIREBALL_SIZE    = 6            # hitbox radius
 
 
 def _loadStrip(filename, frameW=32, frameH=32):
@@ -70,7 +70,8 @@ class Enemy:
         self.position   = vec(*position)
         self.spawnPos   = vec(*position)
         self.velocity   = vec(0.0, 0.0)
-        self.health     = 60
+        self.health     = 90
+        self._max_health = 90
         self.alive      = True
         self._damageCd  = 0.0
         self._facingLeft = False
@@ -96,7 +97,7 @@ class Enemy:
     def _newWanderTarget(self):
         import random
         angle = random.uniform(0, 2 * math.pi)
-        dist  = random.uniform(10, ENEMY_WANDER_RANGE)
+        dist  = random.uniform(10, EASY_ENEMY_WANDER_RANGE)
         return self.spawnPos + vec(math.cos(angle) * dist,
                                    math.sin(angle) * dist)
 
@@ -120,14 +121,14 @@ class Enemy:
         if self.FSM == "chase":
             direction = torchPos - self.position
             if magnitude(direction) > 0:
-                self.velocity = scale(direction, ENEMY_SPEED_CHASE)
+                self.velocity = scale(direction, EASY_ENEMY_SPEED_CHASE)
         else:
             toTarget = self._wanderTarget - self.position
             if magnitude(toTarget) < 8 or self._wanderTimer > 3.0:
                 self._wanderTarget = self._newWanderTarget()
                 self._wanderTimer  = 0.0
             if magnitude(toTarget) > 0:
-                self.velocity = scale(toTarget, ENEMY_SPEED_WANDER)
+                self.velocity = scale(toTarget, EASY_ENEMY_SPEED_WANDER)
 
         self._facingLeft = self.velocity[0] < 0
         self.position   += self.velocity * seconds
@@ -138,9 +139,9 @@ class Enemy:
         """Returns damage dealt this frame, 0 if on cooldown or not touching."""
         if not self.alive or self._damageCd > 0:
             return 0
-        if magnitude(torch.position - self.position) < ENEMY_SIZE + 6:
-            self._damageCd = ENEMY_DAMAGE_COOLDOWN
-            return ENEMY_DAMAGE
+        if magnitude(torch.position - self.position) < EASY_ENEMY_SIZE + 6:
+            self._damageCd = EASY_ENEMY_DAMAGE_COOLDOWN
+            return EASY_ENEMY_DAMAGE
         return 0
 
     def takeDamage(self, amount):
@@ -168,10 +169,10 @@ class Enemy:
             self._frame = (self._frame + 1) % len(self._frames)
 
     def _resolveWalls(self, wallRects):
-        hw    = ENEMY_SIZE // 2
+        hw    = EASY_ENEMY_SIZE // 2
         eRect = pygame.Rect(int(self.position[0]) - hw,
                             int(self.position[1]) - hw,
-                            ENEMY_SIZE, ENEMY_SIZE)
+                            EASY_ENEMY_SIZE, EASY_ENEMY_SIZE)
         for wall in wallRects:
             if not eRect.colliderect(wall):
                 continue
@@ -206,6 +207,17 @@ class Enemy:
         sx = int(self.position[0] - offset[0] - fw // 2)
         sy = int(self.position[1] - offset[1] - fh // 2)
         surface.blit(frame, (sx, sy))
+
+        # Health bar — fixed above sprite
+        BAR_W  = fw
+        BAR_H  = 3
+        BAR_Y  = sy - 6
+        pct    = max(0, self.health / self._max_health)
+        bg     = pygame.Rect(sx, BAR_Y, BAR_W, BAR_H)
+        fill   = pygame.Rect(sx, BAR_Y, int(BAR_W * pct), BAR_H)
+        pygame.draw.rect(surface, (60, 0, 0),   bg)
+        pygame.draw.rect(surface, (220, 50, 50), fill)
+        pygame.draw.rect(surface, (200, 200, 200), bg, 1)
 
 
 # ── Fireball ──────────────────────────────────────────────────────────────────
@@ -242,7 +254,7 @@ class Fireball:
         for enemy in enemies:
             if not enemy.alive:
                 continue
-            if magnitude(enemy.position - self.position) < ENEMY_SIZE + FIREBALL_SIZE:
+            if magnitude(enemy.position - self.position) < EASY_ENEMY_SIZE + FIREBALL_SIZE:
                 enemy.takeDamage(FIREBALL_DAMAGE)
                 self.active = False
                 return
