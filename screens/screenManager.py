@@ -72,6 +72,16 @@ class ScreenManager(object):
             s = entry.getSize()
             entry.position -= vec(s[0] // 2, 0)
 
+        # Win overlay
+        self._winSurf    = pygame.Surface(list(map(int, RESOLUTION)), pygame.SRCALPHA)
+        self._winSurf.fill((0, 0, 0, 200))
+        self._winTitle   = TextEntry(vec(160, 75),  "YOU ESCAPED", "default8", color=(255, 220, 80))
+        self._winRestart = TextEntry(vec(160, 105), "RESTART",     "default8", color=(200, 200, 200))
+        self._winMenu    = TextEntry(vec(160, 128), "MAIN MENU",   "default8", color=(200, 200, 200))
+        for entry in [self._winTitle, self._winRestart, self._winMenu]:
+            s = entry.getSize()
+            entry.position -= vec(s[0] // 2, 0)
+
         # Main menu
         self.mainMenu = EventMenu("menu_bg.png", fontName="default8", color=(80, 50, 20))
         self.mainMenu.addOption("level1", "LEVEL  1", vec(160, 66),
@@ -90,15 +100,17 @@ class ScreenManager(object):
             self.mainMenu.draw(drawSurf)
 
         elif self.state in ["level1", "level3"] and self.game:
-            if self.game.isDead:
-                # Dead — show game frozen + death overlay
-                self.game.draw(drawSurf)
+            self.game.draw(drawSurf)
+            if self.game.isWon:
+                drawSurf.blit(self._winSurf, (0, 0))
+                self._winTitle.drawFixed(drawSurf)
+                self._winRestart.drawFixed(drawSurf)
+                self._winMenu.drawFixed(drawSurf)
+            elif self.game.isDead:
                 drawSurf.blit(self._deadSurf, (0, 0))
                 self._deadTitle.drawFixed(drawSurf)
                 self._deadRestart.drawFixed(drawSurf)
                 self._deadMenu.drawFixed(drawSurf)
-            else:
-                self.game.draw(drawSurf)
 
         elif self.state == "level2":
             drawSurf.fill((10, 10, 20))
@@ -124,13 +136,21 @@ class ScreenManager(object):
                     self._goToMenu()
                 return
 
+            # Win screen intercepts all input
+            if self.state in ["level1", "level3"] and self.game and self.game.isWon:
+                if mouseHit(event, RECT_DEAD_RESTART):
+                    self._restartLevel()
+                elif mouseHit(event, RECT_DEAD_MENU):
+                    self._goToMenu()
+                return
+
             # Death screen intercepts all input
             if self.state in ["level1", "level3"] and self.game and self.game.isDead:
                 if mouseHit(event, RECT_DEAD_RESTART):
                     self._restartLevel()
                 elif mouseHit(event, RECT_DEAD_MENU):
                     self._goToMenu()
-                return   # block everything else while dead
+                return
 
             if event.type == KEYDOWN and event.key == K_ESCAPE:
                 self.state.pause()
@@ -166,7 +186,7 @@ class ScreenManager(object):
     # ── Update ─────────────────────────────────────────────────────────
 
     def update(self, seconds):
-        if self.state in ["level1", "level3"] and self.game and not self.game.isDead:
+        if self.state in ["level1", "level3"] and self.game and not self.game.isDead and not self.game.isWon:
             self.game.update(seconds)
         elif self.state == "mainMenu":
             self.mainMenu.update(seconds)
@@ -195,7 +215,7 @@ class ScreenManager(object):
             self.state.startLevel3()
 
     def _restartLevel(self):
-        """Fresh game on same map. Resume if paused, stay in level if dead."""
+        """Fresh game on same map. Resume if paused, stay in level if dead/won."""
         if self._activeMap is None:
             return
         if self.game:

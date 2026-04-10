@@ -38,8 +38,8 @@ class GameEngine(object):
 
         # Items
         self.torches = [WallTorch(p) for p in self.tilemap.spawnPoints.get("torch_wall", [])]
-        self.keys    = [Key(p)       for p in self.tilemap.spawnPoints.get("key", [])]
-        self.boxes   = [Box(p)       for p in self.tilemap.spawnPoints.get("box", [])]
+        self.keys    = [Key(p) for p in self.tilemap.spawnPoints.get("key", [])]
+        self.boxes   = [Box(p) for p in self.tilemap.spawnPoints.get("box", [])]
         self.plates  = [PressurePlate(p, doorId="gate_2")
                         for p in self.tilemap.spawnPoints.get("pressure_plate", [])]
         self.doors   = {did: Door(did, rect)
@@ -52,8 +52,9 @@ class GameEngine(object):
             self.enemies.append(Enemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
 
         self.fireballs = []
-        self.hasKey    = False
-        self.isDead    = False
+        self.hasKey = False
+        self.isDead = False
+        self.isWon = False
         
         self._fireballCooldown = 0.0
 
@@ -128,16 +129,21 @@ class GameEngine(object):
     # ── Update ───────────────────────────────────────────────────────────────
 
     def update(self, seconds):
-        self._fireballCooldown = max(0, self._fireballCooldown - seconds)
-
         if self.isDead:
             return
+        self._fireballCooldown = max(0, self._fireballCooldown - seconds)
 
         self.torch.update(seconds)
         self._resolveCollisions()
         Drawable.updateOffset(self.torch, self.worldSize)
         self._updateSound()
 
+        if self.hasKey and not self.isWon:
+            if magnitude(self.torch.position - vec(143, 184)) < 24:
+                self.isWon = True
+                if self.ambientSound: self.ambientSound.stop()
+                if self.flameSound:   self.flameSound.stop()
+                    
         for wt in self.torches:
             wt.update(seconds)
 
