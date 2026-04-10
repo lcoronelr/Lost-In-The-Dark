@@ -40,17 +40,17 @@ class GameEngine(object):
         self.torches = [WallTorch(p) for p in self.tilemap.spawnPoints.get("torch_wall", [])]
         self.keys    = [Key(p) for p in self.tilemap.spawnPoints.get("key", [])]
         self.boxes   = [Box(p) for p in self.tilemap.spawnPoints.get("box", [])]
-        self.plates  = [PressurePlate(p, doorId="gate_2")
-                        for p in self.tilemap.spawnPoints.get("pressure_plate", [])]
-        self.doors   = {did: Door(did, rect)
-                        for did, rect in self.tilemap.doorRects.items()}
+        self.plates  = [PressurePlate(p, doorId="gate_2") for p in self.tilemap.spawnPoints.get("pressure_plate", [])]
+        self.doors   = {did: Door(did, rect) for did, rect in self.tilemap.doorRects.items()}
 
         # Enemy — spawns near the key
         
         self.enemies = []
         keySpawns = self.tilemap.spawnPoints.get("key", [])
+        pressureplatespawn = self.tilemap.spawnPoints.get("pressure_plate")
         if keySpawns:
             self.enemies.append(Enemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
+            self.enemies.append(Enemy(vec(*pressureplatespawn[0] ) + ENEMY_OFFSET))
             #self.enemies.append(HardEnemy(vec(*keySpawns[0]) + ENEMY_OFFSET)) this spawns a hard enemy (test)
 
         self.fireballs = []
