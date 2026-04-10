@@ -35,6 +35,5 @@ Some code has been refactored from Professor. Liz Matthews
 - Win condition for Level 1 and Level 3 
 - New puzzle mechanics: ice block melted by fireball / torch sequence / shadow block
 - Build Level 3 map and deploy puzzles and enemies
-- Enemy health bar (maybe)
 - Second enemy type or final boss using existing sprites
 - General polish and final touches

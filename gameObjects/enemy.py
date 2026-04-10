@@ -17,13 +17,21 @@ _HERE    = dirname(abspath(__file__))
 _PROJECT = dirname(_HERE)
 _ENEMIES = join(_PROJECT, "images", "Enemy_Animations_Set")
 
-# Enemy constants
+# Easy Enemy constants
 EASY_ENEMY_SPEED_WANDER   = 30
-EASY_ENEMY_SPEED_CHASE    = 55
-EASY_ENEMY_DAMAGE         = 50       # half health on contact
+EASY_ENEMY_DAMAGE = 50       # half health on contact
 EASY_ENEMY_DAMAGE_COOLDOWN = 2.0     # seconds before it can damage again
-EASY_ENEMY_WANDER_RANGE   = 60       # how far it wanders from spawn
-EASY_ENEMY_SIZE           = 14       # hitbox radius
+EASY_ENEMY_WANDER_RANGE = 60       # how far it wanders from spawn
+EASY_ENEMY_SIZE = 14       # hitbox radius
+
+# Hard Enemy constants
+HARD_ENEMY_SPEED_WANDER = 60
+EASY_ENEMY_SPEED_CHASE = 55
+HARD_ENEMY_SPEED_CHASE = 90
+HARD_ENEMY_DAMAGE = 70       # half health on contact
+HARD_ENEMY_DAMAGE_COOLDOWN = 2.0     # seconds before it can damage again
+HARD_ENEMY_WANDER_RANGE = 80       # how far it wanders from spawn
+HARD_ENEMY_SIZE = 14       # hitbox radius
 
 # Fireball constants
 FIREBALL_SPEED   = 120
@@ -58,6 +66,7 @@ class EnemyFSM(AbstractGameFSM):
 
 
 # ── Enemy ─────────────────────────────────────────────────────────────────────
+
 
 class Enemy:
     """
@@ -222,6 +231,74 @@ class Enemy:
         pygame.draw.rect(surface, (200, 200, 200), bg, 1)
 
 
+#── HardEnemy ─────────────────────────────────────────────────────────────────────
+
+class HardEnemy(Enemy):
+    """
+    Faster, harder hitting enemy using vampire sprites.
+    """
+
+    def __init__(self, position):
+        super().__init__(position)
+
+        # Override health and stats
+        self.health      = 150
+        self._max_health = 150
+
+        # Override sprites with vampire
+        self._idleFrames = _loadStrip("enemies-vampire_idle.png")
+        self._moveFrames = _loadStrip("enemies-vampire_movement.png")
+        self._hitFrames  = _loadStrip("enemies-vampire_take_damage.png")
+        self._frames     = self._idleFrames
+        self._frame      = 0
+
+    def _newWanderTarget(self):
+        import random, math
+        angle = random.uniform(0, 2 * math.pi)
+        dist  = random.uniform(10, HARD_ENEMY_WANDER_RANGE)
+        return self.spawnPos + vec(math.cos(angle) * dist,
+                                   math.sin(angle) * dist)
+
+    def update(self, seconds, torchPos, torchRadius, wallRects):
+        if not self.alive:
+            return
+
+        self._damageCd -= seconds
+        self._hitTimer  = max(0, self._hitTimer - seconds)
+        self._wanderTimer += seconds
+
+        dist = magnitude(torchPos - self.position)
+
+        if self.FSM == "wander" and dist <= torchRadius:
+            self.FSM.startChase()
+        elif self.FSM == "chase" and dist > torchRadius * 1.2:
+            self.FSM.stopChase()
+
+        if self.FSM == "chase":
+            direction = torchPos - self.position
+            if magnitude(direction) > 0:
+                self.velocity = scale(direction, HARD_ENEMY_SPEED_CHASE)
+        else:
+            toTarget = self._wanderTarget - self.position
+            if magnitude(toTarget) < 8 or self._wanderTimer > 3.0:
+                self._wanderTarget = self._newWanderTarget()
+                self._wanderTimer  = 0.0
+            if magnitude(toTarget) > 0:
+                self.velocity = scale(toTarget, HARD_ENEMY_SPEED_WANDER)
+
+        self._facingLeft = self.velocity[0] < 0
+        self.position   += self.velocity * seconds
+        self._resolveWalls(wallRects)
+        self._updateAnim(seconds)
+
+    def tryDamagePlayer(self, torch):
+        if not self.alive or self._damageCd > 0:
+            return 0
+        if magnitude(torch.position - self.position) < HARD_ENEMY_SIZE + 6:
+            self._damageCd = HARD_ENEMY_DAMAGE_COOLDOWN
+            return HARD_ENEMY_DAMAGE
+        return 0
+
 # ── Fireball ──────────────────────────────────────────────────────────────────
 
 class Fireball:
@@ -235,10 +312,9 @@ class Fireball:
         self.velocity    = scale(direction, FIREBALL_SPEED)
         self.lightRadius = FIREBALL_RADIUS
         self.active      = True
-        self._fireballCooldown = 0.0
+        
 
     def update(self, seconds, wallRects, enemies):
-        self._fireballCooldown = max(0, self._fireballCooldown - seconds)
         if not self.active:
             return
 

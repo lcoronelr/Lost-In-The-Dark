@@ -6,7 +6,7 @@ from .lighting import LightingOverlay
 from .hud      import HUD
 from .tilemap  import TileMap
 from .items    import WallTorch, Key, Box, PressurePlate, Door
-from .enemy    import Enemy, Fireball
+from .enemy    import Enemy, Fireball, HardEnemy
 from utils     import vec, RESOLUTION, magnitude, UPSCALED
 from os.path   import join, dirname, abspath
 
@@ -46,10 +46,12 @@ class GameEngine(object):
                         for did, rect in self.tilemap.doorRects.items()}
 
         # Enemy — spawns near the key
+        
         self.enemies = []
         keySpawns = self.tilemap.spawnPoints.get("key", [])
         if keySpawns:
             self.enemies.append(Enemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
+            #self.enemies.append(HardEnemy(vec(*keySpawns[0]) + ENEMY_OFFSET)) this spawns a hard enemy (test)
 
         self.fireballs = []
         self.hasKey = False
@@ -140,7 +142,7 @@ class GameEngine(object):
 
         if self.hasKey and not self.isWon:
             if magnitude(self.torch.position - vec(143, 184)) < 24:
-                self.isWon = True
+                self.isWon = True # win condition
                 if self.ambientSound: self.ambientSound.stop()
                 if self.flameSound:   self.flameSound.stop()
                     
