@@ -1,7 +1,7 @@
 # Lost In The Dark
 
 <p align="center">
-  <img src="logos/Lost.png" width="500">
+  <img src="logos\Lost.png" width="500">
 </p>
 
 ## Overview
