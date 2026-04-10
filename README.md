@@ -8,13 +8,11 @@
 
 This is a top-down game for my CSCI319 class, where your character is a torch that will use light to find its way on different levels.
 
-
 ## Requirements
 
 ```bash
 pip install -r requirements.txt
 ```
-
 
 ## Credits
 
@@ -30,7 +28,7 @@ Some code has been refactored from Professor. Liz Matthews
 
 ## Remaining Work
 
-- Win condition for Level 1 and Level 3 
+- Win condition for Level 1 and Level 3
 - New puzzle mechanics: ice block melted by fireball / torch sequence / shadow block
 - Build Level 3 map and deploy puzzles and enemies
 - Second enemy type or final boss using existing sprites
