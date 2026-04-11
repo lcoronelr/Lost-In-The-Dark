@@ -5,7 +5,7 @@ from .torch    import Torch
 from .lighting import LightingOverlay
 from .hud      import HUD
 from .tilemap  import TileMap
-from .items    import WallTorch, Key, Box, PressurePlate, Door
+from .items    import WallTorch, Key, Box, PressurePlate
 from .enemy    import Enemy, Fireball, HardEnemy
 from utils     import vec, RESOLUTION, magnitude, UPSCALED
 from os.path   import join, dirname, abspath
@@ -41,23 +41,26 @@ class GameEngine(object):
         self.keys    = [Key(p) for p in self.tilemap.spawnPoints.get("key", [])]
         self.boxes   = [Box(p) for p in self.tilemap.spawnPoints.get("box", [])]
         self.plates  = [PressurePlate(p, doorId="gate_2") for p in self.tilemap.spawnPoints.get("pressure_plate", [])]
-        self.doors   = {did: Door(did, rect) for did, rect in self.tilemap.doorRects.items()}
 
-        # Enemy — spawns near the key
-        
+        # Enemies
         self.enemies = []
-        keySpawns = self.tilemap.spawnPoints.get("key", [])
-        pressureplatespawn = self.tilemap.spawnPoints.get("pressure_plate")
+        keySpawns          = self.tilemap.spawnPoints.get("key", [])
+        pressureplatespawn = self.tilemap.spawnPoints.get("pressure_plate", [])
         if keySpawns:
             self.enemies.append(Enemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
-            self.enemies.append(Enemy(vec(*pressureplatespawn[0] ) + ENEMY_OFFSET))
-            #self.enemies.append(HardEnemy(vec(*keySpawns[0]) + ENEMY_OFFSET)) this spawns a hard enemy (test)
+        if pressureplatespawn:
+            self.enemies.append(Enemy(vec(*pressureplatespawn[0]) + ENEMY_OFFSET))
+            #self.enemies.append(HardEnemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
 
         self.fireballs = []
-        self.hasKey = False
-        self.isDead = False
-        self.isWon = False
-        
+        self.hasKey    = False
+        self.isDead    = False
+        self.isWon     = False
+
+        # Save exit rect now before openDoor() can delete it
+        gate1 = self.tilemap.doorRects.get("gate_1")
+        self._exitRect = pygame.Rect(gate1) if gate1 else None
+
         self._fireballCooldown = 0.0
 
         Drawable.updateOffset(self.torch, self.worldSize)
@@ -73,7 +76,7 @@ class GameEngine(object):
             self.ambientSound.play(loops=-1)
             self.flameSound.play(loops=-1)
         except pygame.error:
-            print("windows can't initialize audio") #issues with windows audio
+            print("windows can't initialize audio")
             pass
 
     # ── Draw ─────────────────────────────────────────────────────────────────
@@ -83,8 +86,6 @@ class GameEngine(object):
 
         for plate in self.plates:
             plate.draw(drawSurface)
-        for door in self.doors.values():
-            door.draw(drawSurface)
         for key in self.keys:
             key.draw(drawSurface)
         for box in self.boxes:
@@ -106,20 +107,16 @@ class GameEngine(object):
         self.torch.handleEvent(event)
 
         if event.type == pygame.KEYDOWN:
-            # F — light nearby wall torch
             if event.key == pygame.K_f:
                 for wt in self.torches:
                     cost = wt.tryLight(self.torch)
                     if cost > 0:
                         self.torch.health = max(0, self.torch.health - cost)
 
-        # LEFT CLICK — shoot fireball toward mouse cursor
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            
-
             if self.torch.health > FIREBALL_COST and self._fireballCooldown <= 0:
                 self.torch.health -= FIREBALL_COST
-                self._fireballCooldown = 1 # cooldown speed
+                self._fireballCooldown = 1
                 mx, my = pygame.mouse.get_pos()
                 wx = mx * RESOLUTION[0] / UPSCALED[0] + Drawable.CAMERA_OFFSET[0]
                 wy = my * RESOLUTION[1] / UPSCALED[1] + Drawable.CAMERA_OFFSET[1]
@@ -140,12 +137,14 @@ class GameEngine(object):
         Drawable.updateOffset(self.torch, self.worldSize)
         self._updateSound()
 
+        # Win condition — walk through gate_1 after collecting the key
         if self.hasKey and not self.isWon:
-            if magnitude(self.torch.position - vec(143, 184)) < 24:
-                self.isWon = True # win condition
+            if self._exitRect and self._exitRect.collidepoint(int(self.torch.position[0]),
+                                                               int(self.torch.position[1])):
+                self.isWon = True
                 if self.ambientSound: self.ambientSound.stop()
                 if self.flameSound:   self.flameSound.stop()
-                    
+
         for wt in self.torches:
             wt.update(seconds)
 
@@ -153,25 +152,20 @@ class GameEngine(object):
             box.tryPush(self.torch)
             box.update(seconds, self.tilemap.wallRects)
 
+        # Pressure plate — opens gate_2
         for plate in self.plates:
             for box in self.boxes:
                 if plate.check(box):
                     self.tilemap.openDoor(plate.doorId)
-                    if plate.doorId in self.doors:
-                        self.doors[plate.doorId].unlock()
 
+        # Key — opens gate_1
         for key in self.keys:
             if key.tryCollect(self.torch):
                 self.hasKey = True
                 self.tilemap.openDoor("gate_1")
-                if "gate_1" in self.doors:
-                    self.doors["gate_1"].unlock()
-
-        for door in self.doors.values():
-            door.update(seconds)
 
         for enemy in self.enemies:
-            enemy.update(seconds,self.torch.position,self.torch.lightRadius,self.tilemap.wallRects)
+            enemy.update(seconds, self.torch.position, self.torch.lightRadius, self.tilemap.wallRects)
             dmg = enemy.tryDamagePlayer(self.torch)
             if dmg > 0:
                 self.torch.health = max(0, self.torch.health - dmg)
@@ -190,8 +184,6 @@ class GameEngine(object):
     def stop(self):
         if self.ambientSound: self.ambientSound.stop()
         if self.flameSound:   self.flameSound.stop()
-
-    # https://www.metanetsoftware.com/technique/tutorialA.html
 
     def _updateSound(self):
         from utils.constants import MIN_INTENSITY, MAX_INTENSITY
