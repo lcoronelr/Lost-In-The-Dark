@@ -25,7 +25,7 @@ EASY_ENEMY_WANDER_RANGE = 60       # how far it wanders from spawn
 EASY_ENEMY_SIZE = 14       # hitbox radius
 
 # Hard Enemy constants
-HARD_ENEMY_SPEED_WANDER = 60
+HARD_ENEMY_SPEED_WANDER = 50
 EASY_ENEMY_SPEED_CHASE = 55
 HARD_ENEMY_SPEED_CHASE = 90
 HARD_ENEMY_DAMAGE = 50       # half health on contact
