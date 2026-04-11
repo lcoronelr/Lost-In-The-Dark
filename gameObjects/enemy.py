@@ -87,7 +87,7 @@ class Enemy:
         self._facingLeft = False
         self._hitTimer  = 0.0
 
-        # Animation — using available skeleton1 files
+        # Animation 
         self._idleFrames = _loadStrip("enemies-skeleton1_idle.png")          # 6 frames
         self._moveFrames = _loadStrip("enemies-skeleton1_movement.png")      # 10 frames
         self._hitFrames  = _loadStrip("enemies-skeleton1_take_damage.png")   # 5 frames
@@ -108,8 +108,7 @@ class Enemy:
         import random
         angle = random.uniform(0, 2 * math.pi)
         dist  = random.uniform(10, EASY_ENEMY_WANDER_RANGE)
-        return self.spawnPos + vec(math.cos(angle) * dist,
-                                   math.sin(angle) * dist)
+        return self.spawnPos + vec(math.cos(angle) * dist,math.sin(angle) * dist)
 
     def update(self, seconds, torchPos, torchRadius, wallRects):
         if not self.alive:

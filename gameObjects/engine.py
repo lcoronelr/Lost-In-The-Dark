@@ -57,7 +57,7 @@ class GameEngine(object):
             if platespawns:
                 self.enemies.append(Enemy(vec(*platespawns[0]) + ENEMY_OFFSET))
 
-            # gate_1 = exit (win), gate_2 = opened by plate (placeholder)
+            
             self._gateRects = {}
             for gid in ["gate_1", "gate_2"]:
                 r = self.tilemap.doorRects.get(gid)
@@ -110,11 +110,11 @@ class GameEngine(object):
         Drawable.updateOffset(self.torch, self.worldSize)
 
         self.ambientSound = None
-        self.flameSound   = None
+        self.flameSound = None
         try:
             pygame.mixer.init()
             self.ambientSound = pygame.mixer.Sound(join(_PROJECT, "sounds", "ambient.wav"))
-            self.flameSound   = pygame.mixer.Sound(join(_PROJECT, "sounds", "flame.wav"))
+            self.flameSound = pygame.mixer.Sound(join(_PROJECT, "sounds", "flame.wav"))
             self.ambientSound.set_volume(AMBIENT_SOUND)
             self.flameSound.set_volume(FLAME_MIN_VOL)
             self.ambientSound.play(loops=-1)
