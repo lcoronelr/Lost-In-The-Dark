@@ -7,8 +7,6 @@ import pygame
 from os.path import join, dirname, abspath
 from gameObjects.drawable import Drawable
 from utils import vec
-# https://www.pygame.org/docs/ref/surface.html
-# Tiled JSON map format from https://doc.mapeditor.org/en/stable/reference/json-map-format/
 
 TILE_SIZE = 16
 
@@ -16,16 +14,12 @@ _HERE    = dirname(abspath(__file__))
 _PROJECT = dirname(_HERE)
 
 class TileMap:
-    """
-    Loads a Tiled .tmj map and renders all tile layers and exposes walls.
-    """
 
     TILESET_IMAGE  = "Dungeon_Tileset.png"
     TILESET_COLS   = 10
     TILESET_ROWS   = 10
     TILESET_MARGIN = 0
 
-    # All tile layer names we will render (covers both maps)
     TILE_LAYERS = ["background", "corridors", "floor squares", "door+walls",
                    "Tile Layer 1", "objects", "walls"]
 
@@ -43,7 +37,6 @@ class TileMap:
         rawSheet = pygame.image.load(join(_PROJECT, "images", self.TILESET_IMAGE)).convert_alpha()
         self._tiles = self._sliceTileset(rawSheet)
 
-        # Pre-render all tile layers onto one surface for speed
         self._surface = pygame.Surface((self.pixelW, self.pixelH), pygame.SRCALPHA)
         self._surface.fill((0, 0, 0, 0))
 
@@ -51,39 +44,61 @@ class TileMap:
             if layer["type"] == "tilelayer" and layer["name"] in self.TILE_LAYERS:
                 self._renderLayer(layer)
 
-        # Build wall rects — separate normal walls from doors
+        # Build wall rects
         self.wallRects = []
-        self.doorRects = {}   # id -> Rect
+        self.doorRects = {}
 
         for layer in data["layers"]:
-            if layer["type"] == "objectgroup" and layer["name"].lower() == "walls":
-                for obj in layer["objects"]:
-                    rect  = pygame.Rect(obj["x"], obj["y"],
-                                        obj.get("width", 16), obj.get("height", 16))
-                    props = {p["name"]: p["value"]
-                             for p in obj.get("properties", [])}
+            if layer["type"] != "objectgroup":
+                continue
+            for obj in layer["objects"]:
+                rect  = pygame.Rect(int(obj["x"]), int(obj["y"]),
+                                    int(obj.get("width", 16)), int(obj.get("height", 16)))
+                props = {p["name"]: p["value"] for p in obj.get("properties", [])}
+                door_id = props.get("door")
+                if door_id == "final_gate":
+                    self.doorRects[door_id] = rect  # win zone only, not a wall
+                elif door_id:
+                    self.doorRects[door_id] = rect
+                    self.wallRects.append(rect)   # door starts as solid wall
+                elif layer["name"].lower() == "walls":
+                    self.wallRects.append(rect)   # normal wall
 
-                    # Door format in your map: {'door': 'gate_1'}
-                    door_id = props.get("door")
-                    if door_id:
-                        self.doorRects[door_id] = rect
-                    self.wallRects.append(rect)   # doors start solid
-
-        # Read spawn points — your map uses {'torch_wall':'torch_wall'} format
+        # Read spawn points from ALL object layers (works for both level1 and level3)
         self.spawnPoints = {}
+        SKIP_LAYERS = {"walls"}
         for layer in data["layers"]:
-            if layer["type"] == "objectgroup" and layer["name"].lower() == "spawn":
+            if layer["type"] != "objectgroup":
+                continue
+            if layer["name"].lower() in SKIP_LAYERS:
+                continue
+            for obj in layer["objects"]:
+                props = {p["name"]: p["value"] for p in obj.get("properties", [])}
+
+                # Format 1: key == value  e.g. {'key':'key'}, {'easyenemy':'easyenemy'}
+                # Also handles key != value e.g. {'key':'key1'} — store under the prop name
+                for k, v in props.items():
+                    self.spawnPoints.setdefault(k, [])
+                    self.spawnPoints[k].append((obj["x"], obj["y"]))
+
+                # Format 2: layer name itself is the spawn type (no properties)
+                # e.g. a layer called "player_spawn" with no props on the object
+                if not props:
+                    layerKey = layer["name"].lower().replace(" ", "_")
+                    self.spawnPoints.setdefault(layerKey, [])
+                    self.spawnPoints[layerKey].append((obj["x"], obj["y"]))
+
+        # Read sequence torches — layer named "sequence", property note:1-4
+        self.sequenceTorches = []
+        for layer in data["layers"]:
+            if layer["type"] == "objectgroup" and layer["name"].lower() == "sequence":
                 for obj in layer["objects"]:
-                    props = {p["name"]: p["value"]
-                             for p in obj.get("properties", [])}
-                    # key == value pattern (e.g. {'key':'key'})
-                    for k, v in props.items():
-                        if k == v:
-                            self.spawnPoints.setdefault(k, [])
-                            self.spawnPoints[k].append((obj["x"], obj["y"]))
+                    props = {p["name"]: p["value"] for p in obj.get("properties", [])}
+                    note = props.get("note")
+                    if note is not None:
+                        self.sequenceTorches.append(((obj["x"], obj["y"]), int(note)))
 
     def openDoor(self, doorId):
-        """Remove a door from wallRects so the player can pass through."""
         if doorId in self.doorRects:
             rect = self.doorRects[doorId]
             if rect in self.wallRects:
@@ -91,14 +106,12 @@ class TileMap:
             del self.doorRects[doorId]
 
     def getSpawn(self, spawnType, index=0):
-        """Return (x, y) for a named spawn point, or None if not found."""
         points = self.spawnPoints.get(spawnType, [])
         if index < len(points):
             return points[index]
         return None
 
     def _sliceTileset(self, sheet):
-        """Return dict: gid -> Surface."""
         tiles = {}
         gid = 1
         for row in range(self.TILESET_ROWS):
@@ -126,7 +139,6 @@ class TileMap:
             self._surface.blit(tile, (col * self.tileW, row * self.tileH))
 
     def draw(self, drawSurface):
-        """Blit only the visible portion (camera window) of the map."""
         offset  = Drawable.CAMERA_OFFSET
         srcRect = pygame.Rect(offset[0], offset[1],
                               drawSurface.get_width(), drawSurface.get_height())

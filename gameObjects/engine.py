@@ -5,7 +5,7 @@ from .torch    import Torch
 from .lighting import LightingOverlay
 from .hud      import HUD
 from .tilemap  import TileMap
-from .items    import WallTorch, Key, Box, PressurePlate
+from .items    import WallTorch, Key, Box, PressurePlate, SequenceTorch, SequencePuzzle
 from .enemy    import Enemy, Fireball, HardEnemy
 from utils     import vec, RESOLUTION, magnitude, UPSCALED
 from os.path   import join, dirname, abspath
@@ -13,54 +13,98 @@ from os.path   import join, dirname, abspath
 _HERE    = dirname(abspath(__file__))
 _PROJECT = dirname(_HERE)
 
-HITBOX_W      = 8
-HITBOX_H      = 8
+HITBOX_W = 8
+HITBOX_H = 8
 AMBIENT_SOUND = 0.5
 FLAME_MIN_VOL = 0.0
 FLAME_MAX_VOL = 0.8
 DEFAULT_SPAWN = vec(624, 380)
 FIREBALL_COST = 5
-ENEMY_OFFSET  = vec(-40, -40)
+ENEMY_OFFSET = vec(-40, -40)
 
 
 class GameEngine(object):
 
-    def __init__(self, mapFile="level3.tmj"):
-        self.tilemap   = TileMap(join(_PROJECT, "maps", mapFile))
+    def __init__(self, mapFile="level1.tmj"):
+        self.mapFile = mapFile
+        self.tilemap = TileMap(join(_PROJECT, "maps", mapFile))
         self.worldSize = self.tilemap.getSize()
 
         spawn    = self.tilemap.getSpawn("player_spawn")
         spawnPos = vec(*spawn) if spawn else DEFAULT_SPAWN
 
-        self.torch    = Torch(position=spawnPos)
+        self.torch = Torch(position=spawnPos)
         self.lighting = LightingOverlay()
-        self.hud      = HUD()
+        self.hud = HUD()
 
-        # Items
         self.torches = [WallTorch(p) for p in self.tilemap.spawnPoints.get("torch_wall", [])]
-        self.keys    = [Key(p) for p in self.tilemap.spawnPoints.get("key", [])]
-        self.boxes   = [Box(p) for p in self.tilemap.spawnPoints.get("box", [])]
-        self.plates  = [PressurePlate(p, doorId="gate_2") for p in self.tilemap.spawnPoints.get("pressure_plate", [])]
+        self.boxes = [Box(p) for p in self.tilemap.spawnPoints.get("box", [])]
 
-        # Enemies
-        self.enemies = []
-        keySpawns          = self.tilemap.spawnPoints.get("key", [])
-        pressureplatespawn = self.tilemap.spawnPoints.get("pressure_plate", [])
-        if keySpawns:
-            self.enemies.append(Enemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
-        if pressureplatespawn:
-            self.enemies.append(Enemy(vec(*pressureplatespawn[0]) + ENEMY_OFFSET))
-            #self.enemies.append(HardEnemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
+        # ── Level-specific setup ──────────────────────────────────────────────
+        if mapFile == "level1.tmj":
+            # Key opens gate_1, pressure plate opens gate_2
+            self.keys   = [Key(p) for p in self.tilemap.spawnPoints.get("key", [])]
+            self._keyGateMap = {id(k): "gate_1" for k in self.keys}
+            self.plates = [PressurePlate(p, doorId="gate_2")
+                           for p in self.tilemap.spawnPoints.get("pressure_plate", [])]
+
+            # Enemies spawn near key and pressure plate
+            self.enemies = []
+            keySpawns   = self.tilemap.spawnPoints.get("key", [])
+            platespawns = self.tilemap.spawnPoints.get("pressure_plate", [])
+            if keySpawns:
+                self.enemies.append(Enemy(vec(*keySpawns[0]) + ENEMY_OFFSET))
+            if platespawns:
+                self.enemies.append(Enemy(vec(*platespawns[0]) + ENEMY_OFFSET))
+
+            # gate_1 = exit (win), gate_2 = opened by plate (placeholder)
+            self._gateRects = {}
+            for gid in ["gate_1", "gate_2"]:
+                r = self.tilemap.doorRects.get(gid)
+                if r:
+                    self._gateRects[gid] = pygame.Rect(r)
+
+        else:  # level3
+            # Key opens gate2, pressure plate opens gate1
+            self.keys   = [Key(p) for p in self.tilemap.spawnPoints.get("key", [])]
+            self._keyGateMap = {id(k): "gate2" for k in self.keys}
+            self.plates = [PressurePlate(p, doorId="gate1")
+                           for p in self.tilemap.spawnPoints.get("pressure_plate", [])]
+
+            # Enemies from map tags
+            self.enemies = []
+            for pos in self.tilemap.spawnPoints.get("easyenemy", []):
+                self.enemies.append(Enemy(vec(*pos)))
+            for pos in self.tilemap.spawnPoints.get("hardenemy", []):
+                self.enemies.append(HardEnemy(vec(*pos)))
+
+            # all three gates get placeholders
+            self._gateRects = {}
+            for gid in ["gate1", "gate2", "gate3"]:
+                r = self.tilemap.doorRects.get(gid)
+                if r:
+                    self._gateRects[gid] = pygame.Rect(r)
+
+            # final_gate is a win zone only — no wall, no placeholder
+            fg = self.tilemap.doorRects.get("final_gate")
+            self._finalGateRect = pygame.Rect(fg) if fg else None
+
+            # Sequence torch puzzle — torches tagged with note:1-4
+            seq_torches = []
+            for pos, order in self.tilemap.sequenceTorches:
+                seq_torches.append(SequenceTorch(pos, order))
+            self.sequencePuzzle = SequencePuzzle(seq_torches) if seq_torches else None
+
+        if not hasattr(self, 'sequencePuzzle'):
+            self.sequencePuzzle = None
+        if not hasattr(self, '_finalGateRect'):
+            self._finalGateRect = None
 
         self.fireballs = []
-        self.hasKey    = False
-        self.isDead    = False
-        self.isWon     = False
-
-        # Save exit rect now before openDoor() can delete it
-        gate1 = self.tilemap.doorRects.get("gate_1")
-        self._exitRect = pygame.Rect(gate1) if gate1 else None
-
+        self.hasKey = False
+        self.keysCollected = 0
+        self.isDead = False
+        self.isWon = False
         self._fireballCooldown = 0.0
 
         Drawable.updateOffset(self.torch, self.worldSize)
@@ -97,6 +141,9 @@ class GameEngine(object):
         for fb in self.fireballs:
             fb.draw(drawSurface)
 
+        if self.sequencePuzzle:
+            self.sequencePuzzle.draw(drawSurface)
+        self._drawGates(drawSurface)
         self.torch.draw(drawSurface)
         self.lighting.draw(drawSurface, self.torch, self.torches, self.fireballs)
         self.hud.draw(drawSurface, self.torch)
@@ -112,6 +159,10 @@ class GameEngine(object):
                     cost = wt.tryLight(self.torch)
                     if cost > 0:
                         self.torch.health = max(0, self.torch.health - cost)
+                if self.sequencePuzzle and not self.sequencePuzzle.solved:
+                    result = self.sequencePuzzle.tryLight(self.torch)
+                    if result == "solved":
+                        self.tilemap.openDoor("gate3")
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.torch.health > FIREBALL_COST and self._fireballCooldown <= 0:
@@ -137,32 +188,47 @@ class GameEngine(object):
         Drawable.updateOffset(self.torch, self.worldSize)
         self._updateSound()
 
-        # Win condition — walk through gate_1 after collecting the key
-        if self.hasKey and not self.isWon:
-            if self._exitRect and self._exitRect.collidepoint(int(self.torch.position[0]),
-                                                               int(self.torch.position[1])):
-                self.isWon = True
-                if self.ambientSound: self.ambientSound.stop()
-                if self.flameSound:   self.flameSound.stop()
+        # Win condition
+        if not self.isWon:
+            if self.mapFile == "level1.tmj":
+                # collect key then walk through gate_1
+                if self.hasKey:
+                    r = self._gateRects.get("gate_1")
+                    if r and r.collidepoint(int(self.torch.position[0]), int(self.torch.position[1])):
+                        self.isWon = True
+                        if self.ambientSound: self.ambientSound.stop()
+                        if self.flameSound:   self.flameSound.stop()
+            else:
+                # level3: walk through final_gate to win
+                if self._finalGateRect:
+                    if self._finalGateRect.collidepoint(int(self.torch.position[0]), int(self.torch.position[1])):
+                        self.isWon = True
+                        if self.ambientSound: self.ambientSound.stop()
+                        if self.flameSound:   self.flameSound.stop()
 
         for wt in self.torches:
             wt.update(seconds)
+        if self.sequencePuzzle:
+            self.sequencePuzzle.update(seconds)
 
         for box in self.boxes:
             box.tryPush(self.torch)
             box.update(seconds, self.tilemap.wallRects)
 
-        # Pressure plate — opens gate_2
+        # Pressure plate
         for plate in self.plates:
             for box in self.boxes:
                 if plate.check(box):
                     self.tilemap.openDoor(plate.doorId)
 
-        # Key — opens gate_1
+        # Keys
         for key in self.keys:
             if key.tryCollect(self.torch):
                 self.hasKey = True
-                self.tilemap.openDoor("gate_1")
+                self.keysCollected += 1
+                gateId = self._keyGateMap.get(id(key))
+                if gateId:
+                    self.tilemap.openDoor(gateId)
 
         for enemy in self.enemies:
             enemy.update(seconds, self.torch.position, self.torch.lightRadius, self.tilemap.wallRects)
@@ -184,6 +250,16 @@ class GameEngine(object):
     def stop(self):
         if self.ambientSound: self.ambientSound.stop()
         if self.flameSound:   self.flameSound.stop()
+
+    def _drawGates(self, surface):
+        """Draw a dark rect over each gate that is still locked."""
+        for gid, rect in self._gateRects.items():
+            if gid in self.tilemap.doorRects:
+                offset = Drawable.CAMERA_OFFSET
+                rx = int(rect.x - offset[0])
+                ry = int(rect.y - offset[1])
+                pygame.draw.rect(surface, (40, 20, 10),(rx, ry, rect.width, rect.height))
+                pygame.draw.rect(surface, (80, 50, 20),(rx, ry, rect.width, rect.height), 2)
 
     def _updateSound(self):
         from utils.constants import MIN_INTENSITY, MAX_INTENSITY

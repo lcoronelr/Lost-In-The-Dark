@@ -13,13 +13,13 @@ from utils.vector import vec, magnitude, scale
 from FSMs import AbstractGameFSM
 from statemachine import State
 
-_HERE    = dirname(abspath(__file__))
+_HERE = dirname(abspath(__file__))
 _PROJECT = dirname(_HERE)
 _ENEMIES = join(_PROJECT, "images", "Enemy_Animations_Set")
 
 # Easy Enemy constants
-EASY_ENEMY_SPEED_WANDER   = 30
-EASY_ENEMY_DAMAGE = 50       # half health on contact
+EASY_ENEMY_SPEED_WANDER = 30
+EASY_ENEMY_DAMAGE = 30       # half health on contact
 EASY_ENEMY_DAMAGE_COOLDOWN = 2.0     # seconds before it can damage again
 EASY_ENEMY_WANDER_RANGE = 60       # how far it wanders from spawn
 EASY_ENEMY_SIZE = 14       # hitbox radius
@@ -28,7 +28,7 @@ EASY_ENEMY_SIZE = 14       # hitbox radius
 HARD_ENEMY_SPEED_WANDER = 60
 EASY_ENEMY_SPEED_CHASE = 55
 HARD_ENEMY_SPEED_CHASE = 90
-HARD_ENEMY_DAMAGE = 70       # half health on contact
+HARD_ENEMY_DAMAGE = 50       # half health on contact
 HARD_ENEMY_DAMAGE_COOLDOWN = 2.0     # seconds before it can damage again
 HARD_ENEMY_WANDER_RANGE = 80       # how far it wanders from spawn
 HARD_ENEMY_SIZE = 14       # hitbox radius
@@ -142,7 +142,7 @@ class Enemy:
                 self.velocity = scale(toTarget, EASY_ENEMY_SPEED_WANDER)
 
         self._facingLeft = self.velocity[0] < 0
-        self.position   += self.velocity * seconds
+        self.position += self.velocity * seconds
         self._resolveWalls(wallRects)
         self._updateAnim(seconds)
 
@@ -181,9 +181,7 @@ class Enemy:
 
     def _resolveWalls(self, wallRects):
         hw    = EASY_ENEMY_SIZE // 2
-        eRect = pygame.Rect(int(self.position[0]) - hw,
-                            int(self.position[1]) - hw,
-                            EASY_ENEMY_SIZE, EASY_ENEMY_SIZE)
+        eRect = pygame.Rect(int(self.position[0]) - hw,int(self.position[1]) - hw,EASY_ENEMY_SIZE, EASY_ENEMY_SIZE)
         for wall in wallRects:
             if not eRect.colliderect(wall):
                 continue
@@ -223,9 +221,9 @@ class Enemy:
         BAR_W  = fw
         BAR_H  = 3
         BAR_Y  = sy - 6
-        pct    = max(0, self.health / self._max_health)
-        bg     = pygame.Rect(sx, BAR_Y, BAR_W, BAR_H)
-        fill   = pygame.Rect(sx, BAR_Y, int(BAR_W * pct), BAR_H)
+        pct = max(0, self.health / self._max_health)
+        bg = pygame.Rect(sx, BAR_Y, BAR_W, BAR_H)
+        fill = pygame.Rect(sx, BAR_Y, int(BAR_W * pct), BAR_H)
         pygame.draw.rect(surface, (60, 0, 0),   bg)
         pygame.draw.rect(surface, (220, 50, 50), fill)
         pygame.draw.rect(surface, (200, 200, 200), bg, 1)
@@ -242,29 +240,28 @@ class HardEnemy(Enemy):
         super().__init__(position)
 
         # Override health and stats
-        self.health      = 150
+        self.health = 150
         self._max_health = 150
 
         # Override sprites with vampire
         self._idleFrames = _loadStrip("enemies-vampire_idle.png")
         self._moveFrames = _loadStrip("enemies-vampire_movement.png")
-        self._hitFrames  = _loadStrip("enemies-vampire_take_damage.png")
-        self._frames     = self._idleFrames
-        self._frame      = 0
+        self._hitFrames = _loadStrip("enemies-vampire_take_damage.png")
+        self._frames = self._idleFrames
+        self._frame = 0
 
     def _newWanderTarget(self):
         import random, math
         angle = random.uniform(0, 2 * math.pi)
-        dist  = random.uniform(10, HARD_ENEMY_WANDER_RANGE)
-        return self.spawnPos + vec(math.cos(angle) * dist,
-                                   math.sin(angle) * dist)
+        dist = random.uniform(10, HARD_ENEMY_WANDER_RANGE)
+        return self.spawnPos + vec(math.cos(angle) * dist,math.sin(angle) * dist)
 
     def update(self, seconds, torchPos, torchRadius, wallRects):
         if not self.alive:
             return
 
         self._damageCd -= seconds
-        self._hitTimer  = max(0, self._hitTimer - seconds)
+        self._hitTimer = max(0, self._hitTimer - seconds)
         self._wanderTimer += seconds
 
         dist = magnitude(torchPos - self.position)
@@ -308,10 +305,10 @@ class Fireball:
     """
 
     def __init__(self, position, direction):
-        self.position    = vec(*position)
-        self.velocity    = scale(direction, FIREBALL_SPEED)
+        self.position = vec(*position)
+        self.velocity = scale(direction, FIREBALL_SPEED)
         self.lightRadius = FIREBALL_RADIUS
-        self.active      = True
+        self.active = True
         
 
     def update(self, seconds, wallRects, enemies):
@@ -321,10 +318,8 @@ class Fireball:
         self.position += self.velocity * seconds
 
         # Wall collision
-        hw    = FIREBALL_SIZE
-        fRect = pygame.Rect(int(self.position[0]) - hw,
-                            int(self.position[1]) - hw,
-                            hw * 2, hw * 2)
+        hw = FIREBALL_SIZE
+        fRect = pygame.Rect(int(self.position[0]) - hw,int(self.position[1]) - hw,hw * 2, hw * 2)
         for wall in wallRects:
             if fRect.colliderect(wall):
                 self.active = False
@@ -350,8 +345,7 @@ class Fireball:
         glow = pygame.Surface((FIREBALL_RADIUS * 2, FIREBALL_RADIUS * 2), pygame.SRCALPHA)
         for r in range(FIREBALL_RADIUS, 0, -1):
             alpha = int(180 * (r / FIREBALL_RADIUS) ** 2)
-            pygame.draw.circle(glow, (255, 100, 0, alpha),
-                               (FIREBALL_RADIUS, FIREBALL_RADIUS), r)
+            pygame.draw.circle(glow, (255, 100, 0, alpha),(FIREBALL_RADIUS, FIREBALL_RADIUS), r)
         surface.blit(glow, (sx - FIREBALL_RADIUS, sy - FIREBALL_RADIUS))
 
         # Bright core

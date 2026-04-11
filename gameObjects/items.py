@@ -48,13 +48,13 @@ class WallTorch:
     """
 
     def __init__(self, position):
-        self.position    = vec(*position)
-        self.lit         = False
-        self.frame       = 0
-        self.timer       = 0
-        self.fps         = 6
+        self.position = vec(*position)
+        self.lit = False
+        self.frame = 0
+        self.timer = 0
+        self.fps = 6
         self.lightRadius = TORCH_LIGHT_RADIUS
-        self._frames     = _loadFrames("torch", "torch_", 4)
+        self._frames = _loadFrames("torch", "torch_", 4)
 
     def update(self, seconds):
         if not self.lit:
@@ -103,10 +103,10 @@ class Key:
     def __init__(self, position):
         self.position  = vec(*position)
         self.collected = False
-        self.frame     = 0
-        self.timer     = 0
-        self.fps       = 6
-        self._frames   = _loadFrames("keys", "keys_1_", 4)
+        self.frame = 0
+        self.timer = 0
+        self.fps = 6
+        self._frames = _loadFrames("keys", "keys_1_", 4)
 
     def update(self, seconds):
         if self.collected:
@@ -143,13 +143,9 @@ class PressurePlate:
 
     def __init__(self, position, doorId="gate_2"):
         self.position = vec(*position)
-        self.doorId   = doorId
-        self.active   = False
-        self._rect    = pygame.Rect(
-            int(self.position[0]) - PLATE_SIZE // 2,
-            int(self.position[1]) - PLATE_SIZE // 2,
-            PLATE_SIZE, PLATE_SIZE
-        )
+        self.doorId = doorId
+        self.active = False
+        self._rect = pygame.Rect(int(self.position[0]) - PLATE_SIZE // 2,int(self.position[1]) - PLATE_SIZE // 2,PLATE_SIZE, PLATE_SIZE)
 
     def check(self, box):
         """Returns True the first time the box lands on it."""
@@ -180,12 +176,12 @@ class Box:
     SIZE = 14
 
     def __init__(self, position):
-        self.position    = vec(*position)
-        self.velocity    = vec(0.0, 0.0)
-        self.frame       = 0
-        self.timer       = 0
-        self.fps         = 4
-        self._frames     = _loadFrames("box_1", "box_1_", 4)
+        self.position = vec(*position)
+        self.velocity = vec(0.0, 0.0)
+        self.frame = 0
+        self.timer = 0
+        self.fps = 4
+        self._frames = _loadFrames("box_1", "box_1_", 4)
         self._inContact  = False   # tracks if player was touching last frame
 
     def tryPush(self, torch):
@@ -265,8 +261,8 @@ class Door:
     OPEN_SPEED = 60   # pixels per second the door slides
 
     def __init__(self, doorId, rect):
-        self.doorId  = doorId
-        self.rect    = pygame.Rect(rect)   # original full rect
+        self.doorId = doorId
+        self.rect  = pygame.Rect(rect)   # original full rect
         self._offset = 0.0                 # how many pixels it has slid open
         self.open    = False
         self._color  = (60, 40, 20, 220)   # dark wood color semi-transparent
@@ -290,3 +286,114 @@ class Door:
         drawRect = pygame.Rect(rx, ry, self.rect.width, remaining)
         pygame.draw.rect(surface, (60, 40, 20), drawRect)
         pygame.draw.rect(surface, (40, 25, 10), drawRect, 1)
+
+# ── SequenceTorch ─────────────────────────────────────────────────────────────
+
+class SequenceTorch:
+    """
+    A wall torch that is part of a sequence puzzle.
+    Light them with F in order 1->2->3->4.
+    Wrong order resets all. Correct full sequence opens gate3.
+    """
+
+    INTERACT_RANGE = 24
+
+    def __init__(self, position, order):
+        self.position = vec(*position)
+        self.order = order          # 1, 2, 3, or 4
+        self.lit = False
+        self.frame = 0
+        self.timer = 0
+        self.fps = 6
+        self.lightRadius = 40
+        self._frames = _loadFrames("torch", "torch_", 4)
+
+    def update(self, seconds):
+        if not self.lit:
+            return
+        self.timer += seconds
+        if self.timer >= 1 / self.fps:
+            self.timer -= 1 / self.fps
+            self.frame = (self.frame + 1) % len(self._frames)
+
+    def reset(self):
+        self.lit   = False
+        self.frame = 0
+        self.timer = 0
+
+    def tryLight(self, torch):
+        """Returns True if player is close enough to light this torch."""
+        if self.lit:
+            return False
+        return magnitude(torch.position - self.position) <= self.INTERACT_RANGE
+
+    def draw(self, surface):
+        offset = Drawable.CAMERA_OFFSET
+        sx = int(self.position[0] - offset[0])
+        sy = int(self.position[1] - offset[1])
+
+        # Stone stand
+        pygame.draw.rect(surface, (80, 70, 60), (sx - 3, sy, 6, 8))
+
+        frame_surf = self._frames[self.frame]
+        fw, fh = frame_surf.get_size()
+        fx, fy = sx - fw // 2, sy - fh
+
+        if self.lit:
+            surface.blit(frame_surf, (fx, fy))
+        else:
+            dark = frame_surf.copy()
+            dark.fill((30, 30, 30, 200), special_flags=pygame.BLEND_RGBA_MULT)
+            surface.blit(dark, (fx, fy))
+
+
+
+
+# ── SequencePuzzle ────────────────────────────────────────────────────────────
+
+class SequencePuzzle:
+    """
+    Manages the 4-torch sequence puzzle.
+    Correct order: 1->2->3->4. Wrong step resets all torches.
+    Call tryLight(torch) on F press. Returns 'solved', 'wrong', 'progress', or None.
+    """
+
+    def __init__(self, torches):
+        # torches is a list of SequenceTorch, sorted by order
+        self.torches  = sorted(torches, key=lambda t: t.order)
+        self.progress = 0   # how many lit correctly so far
+        self.solved   = False
+
+    def tryLight(self, torch_player):
+        """Call when player presses F. Returns 'solved', 'wrong', 'progress', or None."""
+        if self.solved:
+            return None
+
+        for st in self.torches:
+            if st.tryLight(torch_player):
+                expected_order = self.progress + 1
+                if st.order == expected_order:
+                    st.lit     = True
+                    self.progress += 1
+                    if self.progress == len(self.torches):
+                        self.solved = True
+                        return "solved"
+                    return "progress"
+                else:
+                    # Wrong order — reset all
+                    self._reset()
+                    return "wrong"
+        return None
+
+    def _reset(self):
+        for st in self.torches:
+            st.reset()
+        self.progress = 0
+
+    def update(self, seconds):
+        for st in self.torches:
+            st.update(seconds)
+
+    def draw(self, surface):
+        for st in self.torches:
+            st.draw(surface)
