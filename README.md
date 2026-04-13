@@ -14,6 +14,14 @@ This is a top-down game for my CSCI319 class, where your character is a torch th
 pip install -r requirements.txt
 ```
 
+## Controls
+
+- WASD movement
+- E -> raise flame
+- Q -> reduce flame
+- F -> interact with torches
+- click -> shoot
+
 ## Credits
 
 [Dungeon asset pack](https://pixel-poem.itch.io/dungeon-assetpuck)
