@@ -17,7 +17,7 @@ MOVE_SPEED = 60
 # Sprite sheet layout (32x32 per cell, 8 cols x 5 rows)
 # Row 0 : walking                          (8 frames)
 # Row 1 : idle    — full flame             (6 frames)
-# Row 2 : idle    — full flame with sparks (8 frames)  [unused]
+# Row 2 : idle    — full flame with sparks (8 frames) 
 # Row 3 : idle    — medium flame           (6 frames)
 # Row 4 : idle    — flame dying out / dark (8 frames)  <- low flame
 

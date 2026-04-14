@@ -194,7 +194,6 @@ class Box:
         touching = dist < pushRange and dist > 0
 
         if touching and not self._inContact:
-            # First frame of contact — apply impulse
             pushDir = vec(dx, dy) / dist
             self.velocity = pushDir * BOX_PUSH_SPEED
 

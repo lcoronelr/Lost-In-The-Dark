@@ -64,7 +64,7 @@ class TileMap:
                 elif layer["name"].lower() == "walls":
                     self.wallRects.append(rect)   # normal wall
 
-        # Read spawn points from ALL object layers (works for both level1 and level3)
+        # Read spawn points from ALL object layers
         self.spawnPoints = {}
         SKIP_LAYERS = {"walls"}
         for layer in data["layers"]:
@@ -75,14 +75,10 @@ class TileMap:
             for obj in layer["objects"]:
                 props = {p["name"]: p["value"] for p in obj.get("properties", [])}
 
-                # Format 1: key == value  e.g. {'key':'key'}, {'easyenemy':'easyenemy'}
-                # Also handles key != value e.g. {'key':'key1'} — store under the prop name
                 for k, v in props.items():
                     self.spawnPoints.setdefault(k, [])
                     self.spawnPoints[k].append((obj["x"], obj["y"]))
 
-                # Format 2: layer name itself is the spawn type (no properties)
-                # e.g. a layer called "player_spawn" with no props on the object
                 if not props:
                     layerKey = layer["name"].lower().replace(" ", "_")
                     self.spawnPoints.setdefault(layerKey, [])

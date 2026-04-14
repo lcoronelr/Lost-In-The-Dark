@@ -85,7 +85,7 @@ class GameEngine(object):
                 if r:
                     self._gateRects[gid] = pygame.Rect(r)
 
-            # final_gate is a win zone only — no wall, no placeholder
+            # final_gate is a win zone 
             fg = self.tilemap.doorRects.get("final_gate")
             self._finalGateRect = pygame.Rect(fg) if fg else None
 
